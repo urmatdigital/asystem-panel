@@ -1,0 +1,9 @@
+api/logs/
+logs/
+api/api.log
+.claude/
+panel/
+livekit-agent/.env
+*.env
+.env*
+api/.env.livekit

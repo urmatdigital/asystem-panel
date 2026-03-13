@@ -1,0 +1,276 @@
+name: "ASYSTEM Multi-Agent Network"
+description: "ASYSTEM AI Agent infrastructure — Tailscale mesh, PVE clusters, services"
+
+settings:
+  direction: TB
+  theme: dark
+  layout: hierarchical
+
+subgraphs:
+  - id: internet
+    label: "🌐 Internet / Cloudflare"
+  - id: csuite
+    label: "🧠 C-Suite Agents"
+  - id: directors
+    label: "👔 Directors (PVE2 LXC)"
+  - id: infra_hetzner
+    label: "🖥️ Hetzner PVE1 (135.181.112.60)"
+  - id: infra_pve2
+    label: "⚡ PVE2 Cluster (77.235.20.172)"
+  - id: services
+    label: "🔧 Services"
+
+nodes:
+  # ── Internet Layer ──
+  - id: cloudflare
+    label: "Cloudflare"
+    type: cloud
+    vendor: cloudflare
+    parent: internet
+    ip: "cloudflare.com"
+    description: "11 zones · 18 tunnels · CDN"
+
+  - id: tailscale
+    label: "Tailscale"
+    type: cloud
+    vendor: aws
+    parent: internet
+    description: "Mesh VPN · 30 nodes"
+
+  # ── Mac Mini (Forge) ──
+  - id: forge
+    label: "Forge 🛠️"
+    type: server
+    vendor: apple
+    ip: "100.87.107.50"
+    description: "Mac Mini M4 · COO · claude-sonnet-4-6"
+    tags: [agent, csuite]
+    parent: csuite
+
+  # ── Atlas VM ──
+  - id: atlas
+    label: "Atlas 🧠"
+    type: server
+    vendor: proxmox
+    ip: "100.68.144.79"
+    description: "VM 216 · CTO · claude-sonnet-4-6"
+    tags: [agent, csuite]
+    parent: csuite
+
+  # ── IRON VPS ──
+  - id: iron
+    label: "IRON ⚙️"
+    type: server
+    vendor: linux
+    ip: "100.114.136.87"
+    description: "Contabo VPS · CSO · gemini-pro"
+    tags: [agent, csuite]
+    parent: csuite
+
+  # ── MESA ──
+  - id: mesa
+    label: "MESA 📊"
+    type: server
+    vendor: proxmox
+    ip: "100.100.40.27"
+    description: "VM 603 · CFO · claude-sonnet-4-6"
+    tags: [agent, csuite]
+    parent: csuite
+
+  # ── Pixel ──
+  - id: pixel
+    label: "Pixel 🎨"
+    type: server
+    vendor: proxmox
+    ip: "10.10.10.53"
+    description: "VM 215 · CMO · design"
+    tags: [agent, csuite]
+    parent: csuite
+
+  # ── PVE2 Directors ──
+  - id: dana
+    label: "Dana 📋"
+    type: server
+    vendor: linux
+    ip: "100.114.5.104"
+    description: "LXC 501 · DIR-PM · haiku"
+    tags: [agent, director]
+    parent: directors
+
+  - id: nurlan
+    label: "Nurlan 🔧"
+    type: server
+    vendor: linux
+    ip: "100.83.188.95"
+    description: "LXC 502 · DIR-DEVOPS · haiku"
+    tags: [agent, director]
+    parent: directors
+
+  - id: bekzat
+    label: "Bekzat 💻"
+    type: server
+    vendor: linux
+    ip: "100.66.219.32"
+    description: "LXC 503 · LEAD-BE · haiku"
+    tags: [agent, director]
+    parent: directors
+
+  - id: ainura
+    label: "Ainura 🎯"
+    type: server
+    vendor: linux
+    ip: "100.112.184.63"
+    description: "LXC 504 · LEAD-FE · haiku"
+    tags: [agent, director]
+    parent: directors
+
+  - id: marat
+    label: "Marat 🧪"
+    type: server
+    vendor: linux
+    ip: "100.107.171.121"
+    description: "LXC 505 · LEAD-QA · haiku"
+    tags: [agent, director]
+    parent: directors
+
+  # ── Hetzner PVE1 ──
+  - id: pve1
+    label: "PVE1 Hetzner"
+    type: server
+    vendor: proxmox
+    ip: "135.181.112.60"
+    description: "Proxmox · 12 VMs · 126GB RAM"
+    tags: [infra]
+    parent: infra_hetzner
+
+  - id: coolify
+    label: "Coolify"
+    type: server
+    vendor: docker
+    ip: "10.10.10.100"
+    description: "VM 100 · App deployment"
+    parent: infra_hetzner
+
+  - id: hetzner_nginx
+    label: "Nginx + OS Panel"
+    type: server
+    vendor: nginx
+    ip: "135.181.112.60:80"
+    description: "os.asystem.kg · shumoku.asystem.kg"
+    parent: infra_hetzner
+
+  # ── PVE2 Cluster ──
+  - id: pve2
+    label: "PVE2 Cluster"
+    type: server
+    vendor: proxmox
+    ip: "100.122.3.73"
+    description: "32 cores · 314GB RAM · 5 LXC agents"
+    tags: [infra]
+    parent: infra_pve2
+
+  # ── Convex ──
+  - id: convex
+    label: "Convex DB"
+    type: cloud
+    vendor: aws
+    ip: "expert-dachshund-299.convex.cloud"
+    description: "Real-time DB · tasks/agents/chat"
+    tags: [service]
+    parent: services
+
+  - id: keycloak
+    label: "Keycloak SSO"
+    type: server
+    vendor: linux
+    ip: "100.69.12.99"
+    description: "sso.asystem.kg · realm: asystem"
+    tags: [service]
+    parent: services
+
+links:
+  # Internet → Forge
+  - from: {node: cloudflare}
+    to: {node: hetzner_nginx}
+    label: "CF Tunnel · HTTPS"
+    bandwidth: 1G
+
+  # Forge → Tailscale mesh
+  - from: {node: forge}
+    to: {node: tailscale}
+    label: "Tailscale 100.87.107.50"
+    bandwidth: 1G
+
+  - from: {node: atlas}
+    to: {node: tailscale}
+    label: "100.68.144.79"
+    bandwidth: 1G
+
+  - from: {node: iron}
+    to: {node: tailscale}
+    label: "100.114.136.87"
+    bandwidth: 1G
+
+  - from: {node: mesa}
+    to: {node: tailscale}
+    label: "100.100.40.27"
+    bandwidth: 1G
+
+  # PVE2 agents → PVE2
+  - from: {node: dana}
+    to: {node: pve2}
+    label: "LXC 501"
+  - from: {node: nurlan}
+    to: {node: pve2}
+    label: "LXC 502"
+  - from: {node: bekzat}
+    to: {node: pve2}
+    label: "LXC 503"
+  - from: {node: ainura}
+    to: {node: pve2}
+    label: "LXC 504"
+  - from: {node: marat}
+    to: {node: pve2}
+    label: "LXC 505"
+
+  # PVE2 → Tailscale
+  - from: {node: pve2}
+    to: {node: tailscale}
+    label: "Tailscale"
+    bandwidth: 10G
+
+  # Forge → Convex (API calls)
+  - from: {node: forge}
+    to: {node: convex}
+    label: "HTTPS API"
+    bandwidth: 1G
+
+  # Atlas → Forge (proxy для OpenRouter)
+  - from: {node: atlas}
+    to: {node: forge}
+    label: "HTTP CONNECT :8899"
+    bandwidth: 1G
+
+  # Hetzner → PVE1
+  - from: {node: pve1}
+    to: {node: tailscale}
+    label: "Tailscale"
+    bandwidth: 10G
+
+  - from: {node: coolify}
+    to: {node: pve1}
+    label: "VM 100"
+
+  - from: {node: hetzner_nginx}
+    to: {node: pve1}
+    label: "Same host"
+
+  # SSO
+  - from: {node: keycloak}
+    to: {node: tailscale}
+    label: "Tailscale"
+    bandwidth: 1G
+
+  - from: {node: hetzner_nginx}
+    to: {node: keycloak}
+    label: "sso.asystem.kg"

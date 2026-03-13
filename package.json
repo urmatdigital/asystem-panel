@@ -1,0 +1,7 @@
+{
+	"dependencies": {
+		"bpmn-engine": "^25.0.1",
+		"camunda-bpmn-moddle": "^7.0.1",
+		"nats": "^2.29.3"
+	}
+}

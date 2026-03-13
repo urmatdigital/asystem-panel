@@ -1,0 +1,50 @@
+# fitness.yaml — Критерии успеха для задач (Карпаты: fitness function как текстовый файл)
+# Человек редактирует этот файл, агенты читают его перед выполнением
+
+version: "1.0"
+updated: "2026-03-14"
+
+# Глобальные метрики успеха
+global:
+  max_retry: 2
+  timeout_minutes: 5
+  success_requires: "task_completed_without_error"
+
+# По типу задачи
+task_types:
+  code:
+    fitness: "tests_pass AND git_commit_created"
+    keywords: [build, fix, implement, refactor, create, написать]
+    preferred_model: "claude-haiku-4-5"
+    max_tokens: 8000
+
+  review:
+    fitness: "feedback_provided AND no_critical_issues_missed"
+    keywords: [review, check, audit, проверь]
+    preferred_model: "deepseek/deepseek-chat-v3-0324"
+    max_tokens: 4000
+
+  research:
+    fitness: "sources_cited AND actionable_insights_extracted"
+    keywords: [research, найди, поиск, рынок, market]
+    preferred_model: "perplexity/sonar"
+    max_tokens: 4000
+
+  ops:
+    fitness: "service_healthy AND no_downtime"
+    keywords: [deploy, restart, monitor, health, ping]
+    preferred_model: "deepseek/deepseek-chat-v3-0324"
+    max_tokens: 2000
+
+  critical:
+    fitness: "issue_resolved AND root_cause_documented"
+    keywords: [critical, blocker, production, hotfix, сломалось]
+    preferred_model: "anthropic/claude-sonnet-4-6"
+    max_tokens: 8000
+
+# Агентские ограничения (5-минутный цикл из видео Карпаты)
+agent_cycle:
+  max_duration_minutes: 5
+  snapshot_on_death: true
+  failure_memory: true
+  collective_learning: true

@@ -1,0 +1,344 @@
+# ASYSTEM STATE.yaml — Shared agent coordination file (CEO pattern)
+# Updated automatically by agents. Read before starting any task.
+
+last_updated: "2026-03-13T22:57:56.538Z"
+updated_by: health-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor
+
+current_sprint:
+  id: "sprint-4"
+  goal: "Autonomous Development Loop — full implementation"
+  deadline: "2026-03-15"
+  status: "active"
+
+active_tasks:
+  # Format: { id, title, agent, status, started_at }
+  []
+
+blocked:
+  # Format: { task_id, reason, blocked_by, since }
+  []
+
+decisions:
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: ASYSTEM Panel (HTTP 502)"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: ASYSTEM Panel (HTTP 502)"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: OliveTin Ops (HTTP 502)"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: OliveTin Ops (HTTP 502)"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: OliveTin Ops (HTTP 0)"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: OliveTin Ops (HTTP 502)"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: ASYSTEM Panel (HTTP 502)"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: OliveTin Ops (HTTP 502)"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: Cap Recorder (HTTP 302)"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: ASYSTEM Panel (HTTP 530)"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service DOWN: OliveTin Ops (HTTP 503)"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service DOWN: Cap Recorder (HTTP 530)"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service DOWN: Cap Recorder (HTTP 530)"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service DOWN: OliveTin Ops (HTTP 0)"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service DOWN: Cap Recorder (HTTP 0)"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service DOWN: ASYSTEM Panel (HTTP 0)"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service DOWN: Cap Recorder (HTTP 530)"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service RECOVERED: Cap Recorder"
+    by: health-monitor
+  - date: "2026-03-12"
+    decision: "Service DOWN: Cap Recorder (HTTP 530)"
+    by: health-monitor
+  - date: "2026-03-11"
+    decision: "forge-watch-loop переписан на Core NATS (без JetStream)"
+    reason: "SOP_EVENTS stream не существует, ack_policy error"
+    by: forge
+  - date: "2026-03-11"
+    decision: "agent-task-loop как PM2 вместо n8n scheduler"
+    reason: "n8n activation API не работает через cookie auth"
+    by: forge
+  - date: "2026-03-11"
+    decision: "ReMe заменён на reme_search.py (cosine similarity)"
+    reason: "LLM chain timeout 60s, прямой поиск 2s"
+    by: forge
+
+context:
+  forge_ip: "100.87.107.50"
+  atlas_ip: "100.68.144.79"
+  iron_ip: "100.114.136.87"
+  panel_url: "https://os.te.kg"
+  api_url: "http://localhost:5190"
+  memory_search: "GET http://localhost:5190/api/memory/reme?q=<query>"
+  memory_add: "POST http://localhost:5190/api/memory/reme/add"
+  braindump: "POST http://localhost:5190/api/braindump"
+  dashboard: "GET http://localhost:5190/api/dashboard/snapshot"

@@ -1,0 +1,34 @@
+{
+  "sop-1773242786027": {
+    "id": "sop-1773242786027",
+    "title": "New SOP",
+    "content": "# Standard Operating Procedure\n\n## Цель\n\nОписание цели данной процедуры.\n\n## Шаги\n\n1. Первый шаг\n2. Второй шаг\n3. Третий шаг\n\n## Ответственный\n\n- **Агент:** Forge\n- **Проверка:** Atlas\n\n## Примечания\n\n---\n",
+    "category": "sop",
+    "updatedAt": "2026-03-11T15:26:26.116Z",
+    "createdAt": "2026-03-11T15:26:26.027Z"
+  },
+  "runbook-1773242787610": {
+    "id": "runbook-1773242787610",
+    "title": "New Runbook",
+    "content": "# Incident Runbook\n\n## Симптомы\n\nОписание проблемы.\n\n## Диагностика\n\n```bash\npm2 status\ntailscale status\n```\n\n## Решение\n\n1. Шаг первый\n2. Шаг второй\n\n## Эскалация\n\nЕсли не помогло → Atlas\n",
+    "category": "runbook",
+    "updatedAt": "2026-03-11T15:26:27.700Z",
+    "createdAt": "2026-03-11T15:26:27.610Z"
+  },
+  "sprint-1773242788627": {
+    "id": "sprint-1773242788627",
+    "title": "Sprint Notes",
+    "content": "# Sprint Notes\n\n## Sprint Goal\n\nОсновная цель спринта.\n\n## Done ✅\n\n- [ ] Задача 1\n- [ ] Задача 2\n\n## In Progress 🔄\n\n- [ ] Задача 3\n\n## Blockers 🚧\n\n- Нет\n\n## Retrospective\n\n**Хорошо:** ...\n**Улучшить:** ...\n",
+    "category": "sprint",
+    "updatedAt": "2026-03-11T15:26:28.714Z",
+    "createdAt": "2026-03-11T15:26:28.627Z"
+  },
+  "agent-1773242789809": {
+    "id": "agent-1773242789809",
+    "title": "Agent Instructions",
+    "content": "# Agent Instructions\n\n## Роль\n\nОписание роли агента.\n\n## Задачи\n\n- Задача 1\n- Задача 2\n\n## Инструменты\n\n- tool_1\n- tool_2\n\n## Ограничения\n\n- Не делать X\n- Всегда спрашивать при Y\n",
+    "category": "agent",
+    "updatedAt": "2026-03-11T15:26:29.904Z",
+    "createdAt": "2026-03-11T15:26:29.809Z"
+  }
+}

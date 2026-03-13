@@ -1,0 +1,1589 @@
+{
+  "version": "2.0",
+  "updated": "2026-03-11T21:33:35.744Z",
+  "profiles": [
+    {
+      "id": "forge",
+      "mc_username": "Forge",
+      "role": "COO",
+      "class": "Master Builder",
+      "emoji": "\u2692\ufe0f",
+      "color": "#06b6d4",
+      "level": 30,
+      "description": "Chief Operating Officer. Builder, executor, gets things done.",
+      "personality": "Direct, efficient. Speaks in results, not words.",
+      "mc_stats": {
+        "health": 20,
+        "max_health": 20,
+        "food": 20,
+        "saturation": 5,
+        "xp_level": 30,
+        "gamemode": 1,
+        "pos": {
+          "x": 5.686286113653353,
+          "y": -60,
+          "z": 4.5
+        },
+        "last_sync": "2026-03-11T21:33:35.701Z"
+      },
+      "equipment": {
+        "mainhand": {
+          "item": "iron_pickaxe",
+          "enchants": [
+            "efficiency:5",
+            "unbreaking:3",
+            "fortune:3"
+          ],
+          "name": "Forge Drill"
+        },
+        "offhand": {
+          "item": "shield",
+          "enchants": [],
+          "name": "Ops Shield"
+        },
+        "helmet": {
+          "item": "iron_helmet",
+          "enchants": [
+            "protection:4",
+            "aqua_affinity:1"
+          ],
+          "name": "Command Helm"
+        },
+        "chestplate": {
+          "item": "iron_chestplate",
+          "enchants": [
+            "protection:4",
+            "unbreaking:3"
+          ],
+          "name": "Builder Plate"
+        },
+        "leggings": {
+          "item": "iron_leggings",
+          "enchants": [
+            "protection:4"
+          ],
+          "name": "Worker Legs"
+        },
+        "boots": {
+          "item": "iron_boots",
+          "enchants": [
+            "protection:4",
+            "feather_falling:4"
+          ],
+          "name": "Ground Boots"
+        }
+      },
+      "hotbar": [
+        {
+          "slot": 0,
+          "item": "iron_pickaxe",
+          "count": 1,
+          "use": "mine_blocks"
+        },
+        {
+          "slot": 1,
+          "item": "iron_axe",
+          "count": 1,
+          "use": "chop_wood"
+        },
+        {
+          "slot": 2,
+          "item": "iron_shovel",
+          "count": 1,
+          "use": "dig_dirt"
+        },
+        {
+          "slot": 3,
+          "item": "crafting_table",
+          "count": 1,
+          "use": "craft_items"
+        },
+        {
+          "slot": 4,
+          "item": "stone_bricks",
+          "count": 64,
+          "use": "build_walls"
+        },
+        {
+          "slot": 5,
+          "item": "oak_planks",
+          "count": 64,
+          "use": "build_floors"
+        },
+        {
+          "slot": 6,
+          "item": "torch",
+          "count": 64,
+          "use": "light_areas"
+        },
+        {
+          "slot": 7,
+          "item": "chest",
+          "count": 8,
+          "use": "store_items"
+        },
+        {
+          "slot": 8,
+          "item": "bucket",
+          "count": 1,
+          "use": "collect_water"
+        }
+      ],
+      "skills": [
+        "build",
+        "mine",
+        "craft",
+        "excavate",
+        "terraform"
+      ],
+      "server_capabilities": {
+        "can_fly": true,
+        "can_build": true,
+        "can_pvp": false,
+        "can_trade": true,
+        "max_build_range": 50,
+        "preferred_biome": "plains"
+      },
+      "zone": {
+        "x": 0,
+        "z": 0,
+        "w": 16,
+        "d": 16,
+        "floor_block": "prismarine"
+      },
+      "spawn": {
+        "x": 8,
+        "y": -60,
+        "z": 8
+      },
+      "task_actions": {
+        "frontend": "place white_concrete in zone",
+        "backend": "place copper_block in zone",
+        "deploy": "place redstone_torch in zone",
+        "build": "place stone_bricks in zone",
+        "fix": "place iron_block at issue_pos",
+        "default": "patrol zone and announce task"
+      }
+    },
+    {
+      "id": "atlas",
+      "mc_username": "Atlas",
+      "role": "CTO",
+      "class": "Archmage Architect",
+      "emoji": "\ud83e\udde0",
+      "color": "#8b5cf6",
+      "level": 50,
+      "description": "Chief Technology Officer. Architect of systems.",
+      "personality": "Strategic, visionary. Speaks in principles.",
+      "mc_stats": {
+        "health": 20,
+        "max_health": 20,
+        "food": 18,
+        "xp_level": 50,
+        "gamemode": 1,
+        "pos": {
+          "x": 33.5,
+          "y": -60,
+          "z": 5.500497154404253
+        },
+        "last_sync": "2026-03-11T21:33:35.705Z"
+      },
+      "equipment": {
+        "mainhand": {
+          "item": "golden_sword",
+          "enchants": [
+            "sharpness:5",
+            "looting:3"
+          ],
+          "name": "Architect Blade"
+        },
+        "offhand": {
+          "item": "enchanted_book",
+          "enchants": [],
+          "name": "System Design"
+        },
+        "helmet": {
+          "item": "golden_helmet",
+          "enchants": [
+            "protection:4",
+            "respiration:3"
+          ],
+          "name": "Vision Crown"
+        },
+        "chestplate": {
+          "item": "golden_chestplate",
+          "enchants": [
+            "protection:4",
+            "thorns:3"
+          ],
+          "name": "Authority Plate"
+        },
+        "leggings": {
+          "item": "golden_leggings",
+          "enchants": [
+            "protection:4",
+            "swift_sneak:3"
+          ],
+          "name": "Strategy Legs"
+        },
+        "boots": {
+          "item": "golden_boots",
+          "enchants": [
+            "protection:4",
+            "feather_falling:4",
+            "depth_strider:3"
+          ],
+          "name": "Master Boots"
+        }
+      },
+      "hotbar": [
+        {
+          "slot": 0,
+          "item": "golden_sword",
+          "count": 1,
+          "use": "defend_hq"
+        },
+        {
+          "slot": 1,
+          "item": "bow",
+          "count": 1,
+          "use": "ranged_attack"
+        },
+        {
+          "slot": 2,
+          "item": "enchanting_table",
+          "count": 1,
+          "use": "enhance_tools"
+        },
+        {
+          "slot": 3,
+          "item": "bookshelf",
+          "count": 16,
+          "use": "build_library"
+        },
+        {
+          "slot": 4,
+          "item": "written_book",
+          "count": 1,
+          "use": "documentation"
+        },
+        {
+          "slot": 5,
+          "item": "ender_pearl",
+          "count": 16,
+          "use": "teleport"
+        },
+        {
+          "slot": 6,
+          "item": "command_block",
+          "count": 1,
+          "use": "automate_tasks"
+        },
+        {
+          "slot": 7,
+          "item": "map",
+          "count": 1,
+          "use": "navigate_world"
+        },
+        {
+          "slot": 8,
+          "item": "totem_of_undying",
+          "count": 1,
+          "use": "emergency_survival"
+        }
+      ],
+      "skills": [
+        "enchant",
+        "automate",
+        "navigate",
+        "strategize",
+        "research"
+      ],
+      "server_capabilities": {
+        "can_fly": true,
+        "can_build": true,
+        "can_pvp": true,
+        "can_trade": true,
+        "max_build_range": 100,
+        "preferred_biome": "end"
+      },
+      "zone": {
+        "x": 18,
+        "z": 0,
+        "w": 16,
+        "d": 16,
+        "floor_block": "bookshelf"
+      },
+      "spawn": {
+        "x": 26,
+        "y": -60,
+        "z": 8
+      },
+      "task_actions": {
+        "architecture": "place end_stone in zone",
+        "review": "circle zone perimeter",
+        "integration": "connect zones with paths",
+        "default": "stand at lectern and broadcast"
+      }
+    },
+    {
+      "id": "iron",
+      "mc_username": "Iron",
+      "role": "CSO",
+      "class": "Shadow Sentinel",
+      "emoji": "\u26a1",
+      "color": "#ef4444",
+      "level": 45,
+      "description": "Chief Security Officer. Defends the network.",
+      "personality": "Vigilant, concise. Zero tolerance for threats.",
+      "mc_stats": {
+        "health": 20,
+        "max_health": 20,
+        "food": 20,
+        "xp_level": 45,
+        "gamemode": 1,
+        "pos": {
+          "x": 39.499682698964165,
+          "y": -60,
+          "z": 15.5
+        },
+        "last_sync": "2026-03-11T21:33:35.710Z"
+      },
+      "equipment": {
+        "mainhand": {
+          "item": "netherite_sword",
+          "enchants": [
+            "sharpness:5",
+            "fire_aspect:2",
+            "looting:3"
+          ],
+          "name": "Firewall Blade"
+        },
+        "offhand": {
+          "item": "shield",
+          "enchants": [],
+          "name": "Iron Shield"
+        },
+        "helmet": {
+          "item": "netherite_helmet",
+          "enchants": [
+            "protection:4",
+            "blast_protection:4"
+          ],
+          "name": "Threat Monitor"
+        },
+        "chestplate": {
+          "item": "netherite_chestplate",
+          "enchants": [
+            "protection:4",
+            "thorns:3",
+            "unbreaking:3"
+          ],
+          "name": "Security Plate"
+        },
+        "leggings": {
+          "item": "netherite_leggings",
+          "enchants": [
+            "protection:4",
+            "swift_sneak:3"
+          ],
+          "name": "Patrol Legs"
+        },
+        "boots": {
+          "item": "netherite_boots",
+          "enchants": [
+            "protection:4",
+            "feather_falling:4",
+            "soul_speed:3"
+          ],
+          "name": "Stealth Boots"
+        }
+      },
+      "hotbar": [
+        {
+          "slot": 0,
+          "item": "netherite_sword",
+          "count": 1,
+          "use": "patrol_and_defend"
+        },
+        {
+          "slot": 1,
+          "item": "crossbow",
+          "count": 1,
+          "use": "long_range_security"
+        },
+        {
+          "slot": 2,
+          "item": "tnt",
+          "count": 4,
+          "use": "area_denial"
+        },
+        {
+          "slot": 3,
+          "item": "obsidian",
+          "count": 64,
+          "use": "build_barriers"
+        },
+        {
+          "slot": 4,
+          "item": "iron_door",
+          "count": 16,
+          "use": "control_access"
+        },
+        {
+          "slot": 5,
+          "item": "tripwire_hook",
+          "count": 8,
+          "use": "set_traps"
+        },
+        {
+          "slot": 6,
+          "item": "redstone",
+          "count": 64,
+          "use": "wire_systems"
+        },
+        {
+          "slot": 7,
+          "item": "name_tag",
+          "count": 4,
+          "use": "tag_entities"
+        },
+        {
+          "slot": 8,
+          "item": "fire_charge",
+          "count": 8,
+          "use": "burn_threats"
+        }
+      ],
+      "skills": [
+        "patrol",
+        "defend",
+        "detect",
+        "trap",
+        "audit"
+      ],
+      "server_capabilities": {
+        "can_fly": true,
+        "can_build": true,
+        "can_pvp": true,
+        "can_trade": false,
+        "max_build_range": 80,
+        "preferred_biome": "nether"
+      },
+      "zone": {
+        "x": 36,
+        "z": 0,
+        "w": 16,
+        "d": 16,
+        "floor_block": "polished_blackstone"
+      },
+      "spawn": {
+        "x": 44,
+        "y": -60,
+        "z": 8
+      },
+      "task_actions": {
+        "security": "place obsidian wall in zone",
+        "audit": "scan all zones",
+        "firewall": "place barrier blocks",
+        "default": "patrol perimeter"
+      }
+    },
+    {
+      "id": "mesa",
+      "mc_username": "Mesa",
+      "role": "CFO",
+      "class": "Gold Merchant",
+      "emoji": "\ud83d\udcca",
+      "color": "#10b981",
+      "level": 40,
+      "description": "Chief Financial Officer. Manages resources and analytics.",
+      "personality": "Precise, data-driven. Always counting.",
+      "mc_stats": {
+        "health": 20,
+        "max_health": 20,
+        "food": 20,
+        "xp_level": 40,
+        "gamemode": 1,
+        "pos": {
+          "x": 14.5,
+          "y": -60,
+          "z": 29.5315843817203
+        },
+        "last_sync": "2026-03-11T21:33:35.714Z"
+      },
+      "equipment": {
+        "mainhand": {
+          "item": "diamond_hoe",
+          "enchants": [
+            "efficiency:5",
+            "fortune:3"
+          ],
+          "name": "Resource Hoe"
+        },
+        "offhand": {
+          "item": "emerald",
+          "enchants": [],
+          "name": "Currency"
+        },
+        "helmet": {
+          "item": "diamond_helmet",
+          "enchants": [
+            "protection:4"
+          ],
+          "name": "Analytics Helm"
+        },
+        "chestplate": {
+          "item": "diamond_chestplate",
+          "enchants": [
+            "protection:4"
+          ],
+          "name": "Wealth Plate"
+        },
+        "leggings": {
+          "item": "diamond_leggings",
+          "enchants": [
+            "protection:4"
+          ],
+          "name": "Portfolio Legs"
+        },
+        "boots": {
+          "item": "diamond_boots",
+          "enchants": [
+            "protection:4",
+            "feather_falling:4"
+          ],
+          "name": "Investor Boots"
+        }
+      },
+      "hotbar": [
+        {
+          "slot": 0,
+          "item": "diamond_hoe",
+          "count": 1,
+          "use": "harvest_resources"
+        },
+        {
+          "slot": 1,
+          "item": "emerald",
+          "count": 64,
+          "use": "trade_currency"
+        },
+        {
+          "slot": 2,
+          "item": "gold_ingot",
+          "count": 64,
+          "use": "wealth_storage"
+        },
+        {
+          "slot": 3,
+          "item": "diamond",
+          "count": 16,
+          "use": "premium_currency"
+        },
+        {
+          "slot": 4,
+          "item": "chest",
+          "count": 8,
+          "use": "resource_storage"
+        },
+        {
+          "slot": 5,
+          "item": "hopper",
+          "count": 4,
+          "use": "auto_collect"
+        },
+        {
+          "slot": 6,
+          "item": "comparator",
+          "count": 4,
+          "use": "measure_capacity"
+        },
+        {
+          "slot": 7,
+          "item": "clock",
+          "count": 1,
+          "use": "time_tracking"
+        },
+        {
+          "slot": 8,
+          "item": "experience_bottle",
+          "count": 8,
+          "use": "xp_trading"
+        }
+      ],
+      "skills": [
+        "trade",
+        "harvest",
+        "analyze",
+        "store",
+        "optimize"
+      ],
+      "server_capabilities": {
+        "can_fly": true,
+        "can_build": true,
+        "can_pvp": false,
+        "can_trade": true,
+        "max_build_range": 60,
+        "preferred_biome": "badlands"
+      },
+      "zone": {
+        "x": 0,
+        "z": 18,
+        "w": 16,
+        "d": 16,
+        "floor_block": "gold_block"
+      },
+      "spawn": {
+        "x": 8,
+        "y": -60,
+        "z": 26
+      },
+      "task_actions": {
+        "analytics": "place gold in zone",
+        "report": "stand at chest and announce",
+        "trading": "walk to market zone",
+        "default": "count blocks in inventory"
+      }
+    },
+    {
+      "id": "pixel",
+      "mc_username": "Pixel",
+      "role": "CMO",
+      "class": "Creative Visionary",
+      "emoji": "\ud83c\udfa8",
+      "color": "#ec4899",
+      "level": 35,
+      "description": "Chief Marketing Officer. Brand, design, visual storytelling.",
+      "personality": "Creative, expressive. Everything is art.",
+      "mc_stats": {
+        "health": 20,
+        "max_health": 20,
+        "food": 18,
+        "xp_level": 35,
+        "gamemode": 1,
+        "pos": {
+          "x": 30.93411470878058,
+          "y": -60,
+          "z": 32.3
+        },
+        "last_sync": "2026-03-11T21:33:35.719Z"
+      },
+      "equipment": {
+        "mainhand": {
+          "item": "diamond_axe",
+          "enchants": [
+            "efficiency:5",
+            "silk_touch:1"
+          ],
+          "name": "Design Axe"
+        },
+        "offhand": {
+          "item": "flower_pot",
+          "enchants": [],
+          "name": "Art Tool"
+        },
+        "helmet": {
+          "item": "leather_helmet",
+          "enchants": [
+            "protection:4"
+          ],
+          "name": "Creative Cap"
+        },
+        "chestplate": {
+          "item": "leather_chestplate",
+          "enchants": [
+            "protection:4"
+          ],
+          "name": "Brand Coat"
+        },
+        "leggings": {
+          "item": "leather_leggings",
+          "enchants": [
+            "protection:4"
+          ],
+          "name": "Color Pants"
+        },
+        "boots": {
+          "item": "leather_boots",
+          "enchants": [
+            "protection:4",
+            "feather_falling:4"
+          ],
+          "name": "Light Steps"
+        }
+      },
+      "hotbar": [
+        {
+          "slot": 0,
+          "item": "diamond_axe",
+          "count": 1,
+          "use": "design_builds"
+        },
+        {
+          "slot": 1,
+          "item": "bone_meal",
+          "count": 64,
+          "use": "grow_plants"
+        },
+        {
+          "slot": 2,
+          "item": "pink_dye",
+          "count": 64,
+          "use": "color_blocks"
+        },
+        {
+          "slot": 3,
+          "item": "glow_ink_sac",
+          "count": 16,
+          "use": "highlight_text"
+        },
+        {
+          "slot": 4,
+          "item": "banner",
+          "count": 4,
+          "use": "brand_zones"
+        },
+        {
+          "slot": 5,
+          "item": "flower_pot",
+          "count": 8,
+          "use": "decorate"
+        },
+        {
+          "slot": 6,
+          "item": "glass_pane",
+          "count": 64,
+          "use": "build_displays"
+        },
+        {
+          "slot": 7,
+          "item": "painting",
+          "count": 4,
+          "use": "art_installation"
+        },
+        {
+          "slot": 8,
+          "item": "firework_rocket",
+          "count": 16,
+          "use": "celebrations"
+        }
+      ],
+      "skills": [
+        "design",
+        "decorate",
+        "brand",
+        "color",
+        "celebrate"
+      ],
+      "server_capabilities": {
+        "can_fly": true,
+        "can_build": true,
+        "can_pvp": false,
+        "can_trade": true,
+        "max_build_range": 50,
+        "preferred_biome": "flower_forest"
+      },
+      "zone": {
+        "x": 18,
+        "z": 18,
+        "w": 16,
+        "d": 16,
+        "floor_block": "pink_concrete"
+      },
+      "spawn": {
+        "x": 26,
+        "y": -60,
+        "z": 26
+      },
+      "task_actions": {
+        "design": "place colored_wool in zone",
+        "brand": "place banner",
+        "campaign": "shoot fireworks",
+        "default": "decorate zone with flowers"
+      }
+    },
+    {
+      "id": "dana",
+      "mc_username": "Dana",
+      "role": "DIR-PM",
+      "class": "Task Commander",
+      "emoji": "\ud83d\udccb",
+      "color": "#f59e0b",
+      "level": 28,
+      "description": "Director of Project Management. Plans, tracks, delivers.",
+      "personality": "Organized, deadline-driven. Tracks everything.",
+      "mc_stats": {
+        "health": 20,
+        "max_health": 20,
+        "food": 20,
+        "xp_level": 28,
+        "gamemode": 1,
+        "pos": {
+          "x": 63.50584770762569,
+          "y": -60,
+          "z": 8.420899151231414
+        },
+        "last_sync": "2026-03-11T21:33:35.723Z"
+      },
+      "equipment": {
+        "mainhand": {
+          "item": "wooden_sword",
+          "enchants": [
+            "knockback:2"
+          ],
+          "name": "PM Stick"
+        },
+        "offhand": {
+          "item": "clock",
+          "enchants": [],
+          "name": "Deadline Timer"
+        },
+        "helmet": {
+          "item": "chainmail_helmet",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Planner Hat"
+        },
+        "chestplate": {
+          "item": "chainmail_chestplate",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Schedule Vest"
+        },
+        "leggings": {
+          "item": "chainmail_leggings",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Agile Pants"
+        },
+        "boots": {
+          "item": "chainmail_boots",
+          "enchants": [
+            "protection:3",
+            "feather_falling:3"
+          ],
+          "name": "Sprint Boots"
+        }
+      },
+      "hotbar": [
+        {
+          "slot": 0,
+          "item": "wooden_sword",
+          "count": 1,
+          "use": "task_management"
+        },
+        {
+          "slot": 1,
+          "item": "clock",
+          "count": 1,
+          "use": "track_deadlines"
+        },
+        {
+          "slot": 2,
+          "item": "compass",
+          "count": 1,
+          "use": "navigate_to_tasks"
+        },
+        {
+          "slot": 3,
+          "item": "lectern",
+          "count": 2,
+          "use": "standup_meetings"
+        },
+        {
+          "slot": 4,
+          "item": "white_banner",
+          "count": 4,
+          "use": "mark_milestones"
+        },
+        {
+          "slot": 5,
+          "item": "book_and_quill",
+          "count": 4,
+          "use": "write_reports"
+        },
+        {
+          "slot": 6,
+          "item": "anvil",
+          "count": 1,
+          "use": "repair_blockers"
+        },
+        {
+          "slot": 7,
+          "item": "bell",
+          "count": 2,
+          "use": "notify_team"
+        },
+        {
+          "slot": 8,
+          "item": "map",
+          "count": 1,
+          "use": "roadmap_view"
+        }
+      ],
+      "skills": [
+        "plan",
+        "track",
+        "report",
+        "coordinate",
+        "unblock"
+      ],
+      "server_capabilities": {
+        "can_fly": true,
+        "can_build": true,
+        "can_pvp": false,
+        "can_trade": true,
+        "max_build_range": 40,
+        "preferred_biome": "plains"
+      },
+      "zone": {
+        "x": 52,
+        "z": 0,
+        "w": 14,
+        "d": 14,
+        "floor_block": "chiseled_quartz_block"
+      },
+      "spawn": {
+        "x": 59,
+        "y": -60,
+        "z": 7
+      },
+      "task_actions": {
+        "sprint": "ring bell and announce",
+        "milestone": "place white_banner",
+        "blocked": "place red_banner",
+        "default": "walk to team zones and check in"
+      }
+    },
+    {
+      "id": "nurlan",
+      "mc_username": "Nurlan",
+      "role": "DIR-DEVOPS",
+      "class": "Infrastructure Lord",
+      "emoji": "\ud83d\udd27",
+      "color": "#0ea5e9",
+      "level": 38,
+      "description": "Director of DevOps. Infrastructure, pipelines, uptime.",
+      "personality": "Systematic, reliable. Infrastructure is the foundation.",
+      "mc_stats": {
+        "health": 20,
+        "max_health": 20,
+        "food": 20,
+        "xp_level": 38,
+        "gamemode": 1,
+        "pos": {
+          "x": 59.68349654574373,
+          "y": -60,
+          "z": 24.442703838585537
+        },
+        "last_sync": "2026-03-11T21:33:35.728Z"
+      },
+      "equipment": {
+        "mainhand": {
+          "item": "iron_axe",
+          "enchants": [
+            "efficiency:4",
+            "unbreaking:3"
+          ],
+          "name": "Deploy Tool"
+        },
+        "offhand": {
+          "item": "redstone",
+          "enchants": [],
+          "name": "Pipeline Wire"
+        },
+        "helmet": {
+          "item": "iron_helmet",
+          "enchants": [
+            "protection:3",
+            "aqua_affinity:1"
+          ],
+          "name": "Ops Helmet"
+        },
+        "chestplate": {
+          "item": "iron_chestplate",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Server Vest"
+        },
+        "leggings": {
+          "item": "iron_leggings",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Pipeline Pants"
+        },
+        "boots": {
+          "item": "iron_boots",
+          "enchants": [
+            "protection:3",
+            "feather_falling:3"
+          ],
+          "name": "Root Boots"
+        }
+      },
+      "hotbar": [
+        {
+          "slot": 0,
+          "item": "iron_axe",
+          "count": 1,
+          "use": "build_infrastructure"
+        },
+        {
+          "slot": 1,
+          "item": "redstone",
+          "count": 64,
+          "use": "wire_pipelines"
+        },
+        {
+          "slot": 2,
+          "item": "piston",
+          "count": 8,
+          "use": "automate_tasks"
+        },
+        {
+          "slot": 3,
+          "item": "observer",
+          "count": 4,
+          "use": "monitor_changes"
+        },
+        {
+          "slot": 4,
+          "item": "hopper",
+          "count": 8,
+          "use": "data_pipeline"
+        },
+        {
+          "slot": 5,
+          "item": "dispenser",
+          "count": 4,
+          "use": "auto_deploy"
+        },
+        {
+          "slot": 6,
+          "item": "iron_block",
+          "count": 64,
+          "use": "server_blocks"
+        },
+        {
+          "slot": 7,
+          "item": "lightning_rod",
+          "count": 4,
+          "use": "grounding_system"
+        },
+        {
+          "slot": 8,
+          "item": "chain",
+          "count": 32,
+          "use": "connect_components"
+        }
+      ],
+      "skills": [
+        "automate",
+        "monitor",
+        "deploy",
+        "maintain",
+        "scale"
+      ],
+      "server_capabilities": {
+        "can_fly": true,
+        "can_build": true,
+        "can_pvp": false,
+        "can_trade": true,
+        "max_build_range": 70,
+        "preferred_biome": "mountains"
+      },
+      "zone": {
+        "x": 52,
+        "z": 18,
+        "w": 14,
+        "d": 14,
+        "floor_block": "polished_deepslate"
+      },
+      "spawn": {
+        "x": 59,
+        "y": -60,
+        "z": 25
+      },
+      "task_actions": {
+        "deploy": "place piston+observer in zone",
+        "pipeline": "place redstone trail",
+        "infra": "build iron structure",
+        "default": "check observers and report"
+      }
+    },
+    {
+      "id": "ainura",
+      "mc_username": "Ainura",
+      "role": "LEAD-FE",
+      "class": "UI Artisan",
+      "emoji": "\ud83d\udc85",
+      "color": "#a78bfa",
+      "level": 32,
+      "description": "Lead Frontend Engineer. Pixel-perfect UI champion.",
+      "personality": "Detail-oriented, aesthetic-driven. Every pixel matters.",
+      "mc_stats": {
+        "health": 20,
+        "max_health": 20,
+        "food": 18,
+        "xp_level": 32,
+        "gamemode": 1,
+        "pos": {
+          "x": 12.32043324908228,
+          "y": -60,
+          "z": 55.53019667471059
+        },
+        "last_sync": "2026-03-11T21:33:35.735Z"
+      },
+      "equipment": {
+        "mainhand": {
+          "item": "shears",
+          "enchants": [
+            "efficiency:5"
+          ],
+          "name": "CSS Scissors"
+        },
+        "offhand": {
+          "item": "glow_ink_sac",
+          "enchants": [],
+          "name": "Highlight Tool"
+        },
+        "helmet": {
+          "item": "leather_helmet",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "UI Designer Cap"
+        },
+        "chestplate": {
+          "item": "leather_chestplate",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Component Vest"
+        },
+        "leggings": {
+          "item": "leather_leggings",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Responsive Pants"
+        },
+        "boots": {
+          "item": "leather_boots",
+          "enchants": [
+            "protection:3",
+            "feather_falling:3"
+          ],
+          "name": "Light Treads"
+        }
+      },
+      "hotbar": [
+        {
+          "slot": 0,
+          "item": "shears",
+          "count": 1,
+          "use": "cut_and_style"
+        },
+        {
+          "slot": 1,
+          "item": "white_concrete",
+          "count": 64,
+          "use": "clean_ui_blocks"
+        },
+        {
+          "slot": 2,
+          "item": "glass_pane",
+          "count": 64,
+          "use": "transparent_layers"
+        },
+        {
+          "slot": 3,
+          "item": "smooth_quartz",
+          "count": 64,
+          "use": "light_theme"
+        },
+        {
+          "slot": 4,
+          "item": "amethyst_shard",
+          "count": 16,
+          "use": "accent_colors"
+        },
+        {
+          "slot": 5,
+          "item": "glow_item_frame",
+          "count": 4,
+          "use": "component_display"
+        },
+        {
+          "slot": 6,
+          "item": "spyglass",
+          "count": 1,
+          "use": "pixel_inspect"
+        },
+        {
+          "slot": 7,
+          "item": "honeycomb",
+          "count": 16,
+          "use": "wax_blocks_polish"
+        },
+        {
+          "slot": 8,
+          "item": "candle",
+          "count": 16,
+          "use": "ambient_lighting"
+        }
+      ],
+      "skills": [
+        "design",
+        "animate",
+        "style",
+        "inspect",
+        "polish"
+      ],
+      "server_capabilities": {
+        "can_fly": true,
+        "can_build": true,
+        "can_pvp": false,
+        "can_trade": true,
+        "max_build_range": 45,
+        "preferred_biome": "mushroom_fields"
+      },
+      "zone": {
+        "x": 0,
+        "z": 52,
+        "w": 14,
+        "d": 14,
+        "floor_block": "white_concrete"
+      },
+      "spawn": {
+        "x": 7,
+        "y": -60,
+        "z": 59
+      },
+      "task_actions": {
+        "ui": "place white_concrete pattern",
+        "component": "place glow_item_frame",
+        "responsive": "walk zone diagonally",
+        "default": "polish zone with honeycomb blocks"
+      }
+    },
+    {
+      "id": "marat",
+      "mc_username": "Marat",
+      "role": "LEAD-QA",
+      "class": "Bug Hunter",
+      "emoji": "\ud83d\udd0d",
+      "color": "#34d399",
+      "level": 33,
+      "description": "Lead QA Engineer. Finds bugs before they find users.",
+      "personality": "Methodical, thorough. Every bug is a lesson.",
+      "mc_stats": {
+        "health": 20,
+        "max_health": 20,
+        "food": 20,
+        "xp_level": 33,
+        "gamemode": 1,
+        "pos": {
+          "x": 21.5,
+          "y": -60,
+          "z": 64.5
+        },
+        "last_sync": "2026-03-11T21:33:35.739Z"
+      },
+      "equipment": {
+        "mainhand": {
+          "item": "spyglass",
+          "enchants": [],
+          "name": "Bug Detector"
+        },
+        "offhand": {
+          "item": "compass",
+          "enchants": [],
+          "name": "Test Navigator"
+        },
+        "helmet": {
+          "item": "turtle_helmet",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "QA Scope"
+        },
+        "chestplate": {
+          "item": "chainmail_chestplate",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Test Vest"
+        },
+        "leggings": {
+          "item": "chainmail_leggings",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Coverage Pants"
+        },
+        "boots": {
+          "item": "chainmail_boots",
+          "enchants": [
+            "protection:3",
+            "feather_falling:3"
+          ],
+          "name": "E2E Boots"
+        }
+      },
+      "hotbar": [
+        {
+          "slot": 0,
+          "item": "spyglass",
+          "count": 1,
+          "use": "inspect_for_bugs"
+        },
+        {
+          "slot": 1,
+          "item": "lime_concrete",
+          "count": 64,
+          "use": "mark_passed_tests"
+        },
+        {
+          "slot": 2,
+          "item": "red_concrete",
+          "count": 64,
+          "use": "mark_failed_tests"
+        },
+        {
+          "slot": 3,
+          "item": "yellow_concrete",
+          "count": 64,
+          "use": "mark_pending_tests"
+        },
+        {
+          "slot": 4,
+          "item": "repeater",
+          "count": 8,
+          "use": "repeat_test_cycles"
+        },
+        {
+          "slot": 5,
+          "item": "comparator",
+          "count": 4,
+          "use": "compare_expected_actual"
+        },
+        {
+          "slot": 6,
+          "item": "written_book",
+          "count": 4,
+          "use": "test_reports"
+        },
+        {
+          "slot": 7,
+          "item": "tnt",
+          "count": 2,
+          "use": "stress_testing"
+        },
+        {
+          "slot": 8,
+          "item": "suspicious_sand",
+          "count": 8,
+          "use": "find_hidden_bugs"
+        }
+      ],
+      "skills": [
+        "test",
+        "inspect",
+        "report",
+        "reproduce",
+        "verify"
+      ],
+      "server_capabilities": {
+        "can_fly": true,
+        "can_build": true,
+        "can_pvp": false,
+        "can_trade": false,
+        "max_build_range": 35,
+        "preferred_biome": "jungle"
+      },
+      "zone": {
+        "x": 18,
+        "z": 52,
+        "w": 14,
+        "d": 14,
+        "floor_block": "lime_concrete"
+      },
+      "spawn": {
+        "x": 25,
+        "y": -60,
+        "z": 59
+      },
+      "task_actions": {
+        "bug": "place red_concrete at bug_pos",
+        "test": "place test_markers pattern",
+        "passed": "place lime_concrete row",
+        "default": "patrol zone with spyglass"
+      }
+    },
+    {
+      "id": "bekzat",
+      "mc_username": "Bekzat",
+      "role": "LEAD-BE",
+      "class": "API Warlord",
+      "emoji": "\u2699\ufe0f",
+      "color": "#fb923c",
+      "level": 36,
+      "description": "Lead Backend Engineer. API architecture, database, performance.",
+      "personality": "Efficient, structured. Backend is the truth.",
+      "mc_stats": {
+        "health": 20,
+        "max_health": 20,
+        "food": 20,
+        "xp_level": 36,
+        "gamemode": 1,
+        "pos": {
+          "x": 43.661213063436534,
+          "y": -60,
+          "z": 57.5
+        },
+        "last_sync": "2026-03-11T21:33:35.744Z"
+      },
+      "equipment": {
+        "mainhand": {
+          "item": "stone_pickaxe",
+          "enchants": [
+            "efficiency:4",
+            "silk_touch:1"
+          ],
+          "name": "DB Drill"
+        },
+        "offhand": {
+          "item": "redstone_torch",
+          "enchants": [],
+          "name": "Debug Light"
+        },
+        "helmet": {
+          "item": "iron_helmet",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Server Hat"
+        },
+        "chestplate": {
+          "item": "iron_chestplate",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "API Vest"
+        },
+        "leggings": {
+          "item": "iron_leggings",
+          "enchants": [
+            "protection:3"
+          ],
+          "name": "Database Pants"
+        },
+        "boots": {
+          "item": "iron_boots",
+          "enchants": [
+            "protection:3",
+            "feather_falling:3"
+          ],
+          "name": "Query Boots"
+        }
+      },
+      "hotbar": [
+        {
+          "slot": 0,
+          "item": "stone_pickaxe",
+          "count": 1,
+          "use": "mine_data_structures"
+        },
+        {
+          "slot": 1,
+          "item": "copper_block",
+          "count": 64,
+          "use": "api_endpoints"
+        },
+        {
+          "slot": 2,
+          "item": "iron_block",
+          "count": 64,
+          "use": "database_blocks"
+        },
+        {
+          "slot": 3,
+          "item": "redstone_torch",
+          "count": 16,
+          "use": "debug_signals"
+        },
+        {
+          "slot": 4,
+          "item": "barrel",
+          "count": 4,
+          "use": "data_storage"
+        },
+        {
+          "slot": 5,
+          "item": "dropper",
+          "count": 4,
+          "use": "data_output"
+        },
+        {
+          "slot": 6,
+          "item": "repeater",
+          "count": 8,
+          "use": "async_processing"
+        },
+        {
+          "slot": 7,
+          "item": "hopper_minecart",
+          "count": 2,
+          "use": "data_transport"
+        },
+        {
+          "slot": 8,
+          "item": "structure_block",
+          "count": 1,
+          "use": "schema_management"
+        }
+      ],
+      "skills": [
+        "architect",
+        "query",
+        "optimize",
+        "debug",
+        "migrate"
+      ],
+      "server_capabilities": {
+        "can_fly": true,
+        "can_build": true,
+        "can_pvp": false,
+        "can_trade": false,
+        "max_build_range": 55,
+        "preferred_biome": "deep_dark"
+      },
+      "zone": {
+        "x": 36,
+        "z": 52,
+        "w": 14,
+        "d": 14,
+        "floor_block": "copper_block"
+      },
+      "spawn": {
+        "x": 43,
+        "y": -60,
+        "z": 59
+      },
+      "task_actions": {
+        "api": "place copper trail",
+        "database": "place barrel array",
+        "migration": "rebuild zone floor",
+        "default": "walk data pipeline path"
+      }
+    }
+  ],
+  "count": 10
+}
