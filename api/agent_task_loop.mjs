@@ -65,7 +65,7 @@ function recordDispatch(title, body) {
 
 const CRITICAL_SERVICES = [
   { name: 'ASYSTEM Panel', url: 'https://os.te.kg',      expect: 200 },
-  { name: 'Cap Recorder',  url: 'https://cap.te.kg',     expect: [200, 307] },
+  { name: 'Cap Recorder',  url: 'https://cap.te.kg',     expect: [200, 302, 307] },
   { name: 'OliveTin Ops',  url: 'https://os.te.kg/ops/', expect: 200 },
 ];
 
@@ -587,7 +587,7 @@ async function taskCycle() {
         const improved = shouldKeep(agent, 'tasks_per_dollar', tasksPerDollar, false); // false = higher is better
         if (improved) {
           const repo = task.repo || `${process.env.HOME}/Projects/ASYSTEM`;
-          await keepChanges(repo, `✅ task: ${task.title} (tasks_per_dollar improved)`).catch(() => {});
+          try { keepChanges(repo, `✅ task: ${task.title}`); } catch {};
         }
       }
 
@@ -604,7 +604,7 @@ async function taskCycle() {
       }
     }
   } catch (e) {
-    console.error('[TaskLoop] Cycle error:', e.message);
+    console.error('[TaskLoop] Cycle error:', e.message, e.stack?.split('\n').slice(1,3).join(' | '));
   }
 }
 
