@@ -1,8 +1,8 @@
 # ASYSTEM STATE.yaml — Shared agent coordination file (CEO pattern)
 # Updated automatically by agents. Read before starting any task.
 
-last_updated: "2026-03-13T22:57:56.538Z"
-updated_by: health-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor
+last_updated: "2026-03-14T06:40:10.746Z"
+updated_by: health-monitor-monitor-loop-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor-monitor
 
 current_sprint:
   id: "sprint-4"
@@ -19,6 +19,45 @@ blocked:
   []
 
 decisions:
+  - date: "2026-03-14"
+    decision: "Service DOWN: Cap Recorder (HTTP 302)"
+    by: health-monitor
+  - date: "2026-03-14"
+    decision: "Service DOWN: Cap Recorder (HTTP 302)"
+    by: health-monitor
+  - date: "2026-03-14"
+    decision: "Escalated task "Подключить Qdrant к панели — живой поиск по памяти агентов" to Atlas after 3 failed attempts"
+    by: task-loop
+  - date: "2026-03-14"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-14"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-14"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-14"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-14"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-14"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-14"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: ASYSTEM Panel"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service DOWN: ASYSTEM Panel (HTTP 502)"
+    by: health-monitor
+  - date: "2026-03-13"
+    decision: "Service RECOVERED: OliveTin Ops"
+    by: health-monitor
   - date: "2026-03-13"
     decision: "Service RECOVERED: ASYSTEM Panel"
     by: health-monitor

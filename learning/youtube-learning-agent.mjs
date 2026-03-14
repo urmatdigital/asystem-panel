@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 /**
- * YouTube Learning Agent - Автономное обучение из видео
- * Цикл: Поиск → Анализ → Компрессия → Тест → Внедрение → Метрики
+ * YouTube Learning Agent v2 — Deep Single-Video Learning
+ * 
+ * Один цикл = одно видео = глубокое изучение:
+ * 1. Найти 1 новое видео по теме
+ * 2. Скачать ПОЛНЫЙ транскрипт (без обрезки)
+ * 3. Многоуровневый анализ: проблема → решение → код → метрики → применение
+ * 4. Записать в Qdrant + файл
+ * 5. Отправить краткий отчёт в Telegram
  */
 
 import { execSync } from 'child_process';
@@ -10,323 +16,392 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LEARNING_DB = path.join(__dirname, 'learning-db.json');
-const PATTERNS_DIR = path.join(__dirname, 'patterns');
-const METRICS_DB = path.join(__dirname, 'metrics.json');
+const LEARNING_DB   = path.join(__dirname, 'learning-db.json');
+const PATTERNS_DIR  = path.join(__dirname, 'patterns');
+const LOG_FILE      = path.join(process.env.HOME, '.openclaw/logs/youtube-learner.log');
 
-// Инициализация
 if (!fs.existsSync(PATTERNS_DIR)) fs.mkdirSync(PATTERNS_DIR, { recursive: true });
-if (!fs.existsSync(LEARNING_DB)) fs.writeFileSync(LEARNING_DB, JSON.stringify({ videos: [], patterns: [], implementations: [] }, null, 2));
-if (!fs.existsSync(METRICS_DB)) fs.writeFileSync(METRICS_DB, JSON.stringify({ tests: [], rollbacks: [], wins: [] }, null, 2));
+if (!fs.existsSync(LEARNING_DB))  fs.writeFileSync(LEARNING_DB, JSON.stringify({ videos: [], patterns: [] }, null, 2));
 
-class YouTubeLearningAgent {
+const OPENAI_KEY = (() => {
+  try { return execSync(`grep OPENAI_API_KEY $HOME/.openclaw/workspace/.env | tail -1 | cut -d= -f2`, { encoding: 'utf8' }).trim(); }
+  catch { return process.env.OPENAI_API_KEY || ''; }
+})();
+
+function log(msg) {
+  const line = `[${new Date().toISOString().slice(0,19).replace('T',' ')}] ${msg}`;
+  console.log(line);
+  try { fs.appendFileSync(LOG_FILE, line + '\n'); } catch {}
+}
+
+// Темы для поиска (из видео b12LMts3pHk: Context Engineering фреймворк)
+const TOPICS = [
+  'context engineering AI agents 2025',
+  'multi agent orchestration production',
+  'LLM cost optimization techniques',
+  'autonomous AI systems patterns',
+  'self healing infrastructure AI',
+  'agent memory systems Qdrant vector',
+  'Claude Code workflow best practices',
+  'MCP model context protocol tutorial',
+  'RAG retrieval augmented generation production',
+  'AI agent task automation 2025',
+];
+
+class DeepLearningAgent {
   constructor() {
     this.db = JSON.parse(fs.readFileSync(LEARNING_DB, 'utf8'));
-    this.metrics = JSON.parse(fs.readFileSync(METRICS_DB, 'utf8'));
-    this.topics = [
-      'multi agent orchestration',
-      'LLM cost optimization', 
-      'autonomous AI systems',
-      'self healing infrastructure',
-      'token optimization LLM',
-      'agent memory systems',
-      'production AI deployment'
-    ];
   }
 
-  // 1. ПОИСК - найти новые видео по темам
-  async searchVideos(topic, limit = 3) {
-    console.log(`🔍 Searching: ${topic}`);
+  save() {
+    fs.writeFileSync(LEARNING_DB, JSON.stringify(this.db, null, 2));
+  }
+
+  // Уже просмотренные видео
+  seenIds() {
+    return new Set(this.db.videos.map(v => v.id));
+  }
+
+  // Выбор темы: из Convex активных задач или ротация
+  async chooseTopic() {
     try {
-      // Используем yt-dlp для поиска
-      const searchQuery = `ytsearch${limit}:${topic} 2024 OR 2025 OR 2026`;
-      const cmd = `yt-dlp --get-id --get-title --get-duration '${searchQuery}' 2>/dev/null`;
-      const output = execSync(cmd, { encoding: 'utf8' }).trim();
-      
-      const lines = output.split('\n');
-      const videos = [];
-      
-      for (let i = 0; i < lines.length; i += 3) {
-        if (lines[i] && lines[i+1] && lines[i+2]) {
-          const title = lines[i];
-          const videoId = lines[i+1];
-          const duration = parseInt(lines[i+2]) || 0;
-          
-          // Пропускаем слишком длинные (>45 мин) и уже просмотренные
-          if (duration > 2700) continue;
-          if (this.db.videos.some(v => v.id === videoId)) continue;
-          
-          videos.push({ id: videoId, title, duration, topic });
-        }
+      const res = execSync(
+        `curl -s --max-time 6 "https://expert-dachshund-299.convex.site/agent/tasks/list"`,
+        { encoding: 'utf8', timeout: 8000 }
+      );
+      const data = JSON.parse(res);
+      const active = (data.tasks || []).filter(t => t.status === 'todo' || t.status === 'in_progress');
+      if (active.length > 0) {
+        const task = active[Math.floor(Math.random() * Math.min(3, active.length))];
+        const title = (task.title || '').toLowerCase();
+        if (title.includes('qdrant') || title.includes('memory'))  return 'agent memory systems vector database 2025';
+        if (title.includes('dispatch') || title.includes('agent')) return 'multi agent orchestration patterns 2025';
+        if (title.includes('react') || title.includes('frontend')) return 'React AI integration best practices 2025';
+        if (title.includes('cost') || title.includes('token'))     return 'LLM cost optimization production 2025';
+        return `${task.title.split(' ').slice(0, 5).join(' ')} AI 2025`;
       }
-      
-      return videos;
-    } catch (err) {
-      console.error(`❌ Search failed: ${err.message}`);
-      return [];
+    } catch {}
+    // Ротация по индексу дня
+    const idx = new Date().getDate() % TOPICS.length;
+    return TOPICS[idx];
+  }
+
+  // 1. Найти одно новое видео (не просмотренное)
+  async findVideo(topic) {
+    log(`🔍 Тема: "${topic}"`);
+    const seen = this.seenIds();
+
+    // Пробуем до 5 видео пока не найдём непросмотренное
+    const query = `ytsearch5:${topic}`;
+    const lines = execSync(
+      `yt-dlp --get-id --get-title --get-duration '${query}' 2>/dev/null`,
+      { encoding: 'utf8', timeout: 30000 }
+    ).trim().split('\n');
+
+    for (let i = 0; i < lines.length; i += 3) {
+      const title = lines[i]?.trim();
+      const id    = lines[i+1]?.trim();
+      const dur   = parseInt(lines[i+2]) || 0;
+
+      if (!id || !title) continue;
+      if (seen.has(id)) { log(`⏭  Уже смотрели: ${title.slice(0,50)}`); continue; }
+      if (dur > 3600)   { log(`⏭  Слишком длинное (${Math.round(dur/60)}мин): ${title.slice(0,50)}`); continue; }
+      // duration check removed
+
+      log(`🎬 Выбрано: "${title}" (${Math.round(dur/60)}мин)`);
+      return { id, title, duration: dur, topic, url: `https://youtube.com/watch?v=${id}` };
     }
+    return null;
   }
 
-  // 2. АНАЛИЗ - извлечь паттерны из транскрипта
-  async analyzeVideo(video) {
-    console.log(`📺 Analyzing: ${video.title}`);
-    
+  // 2. Скачать ПОЛНЫЙ транскрипт
+  async getTranscript(video) {
+    log(`📄 Скачиваю транскрипт...`);
+    const tmp = `/tmp/yt-${video.id}`;
+
     try {
-      // Получаем транскрипт через yt-dlp
-      let transcript;
-      try {
-        // Сначала пробуем получить автоматические субтитры
-        execSync(
-          `yt-dlp --quiet --no-warnings --skip-download --write-auto-sub --sub-lang en --sub-format vtt --output "/tmp/${video.id}" "https://youtube.com/watch?v=${video.id}"`,
-          { stdio: 'ignore' }
-        );
-        
-        // Читаем и чистим субтитры
-        transcript = execSync(
-          `cat /tmp/${video.id}.en.vtt 2>/dev/null | sed 's/<[^>]*>//g' | grep -v "^WEBVTT" | grep -v "^$" | grep -v "^[0-9][0-9]:" | head -200`,
-          { encoding: 'utf8' }
-        ).trim();
-        
-        // Удаляем временный файл
-        try { fs.unlinkSync(`/tmp/${video.id}.en.vtt`); } catch {}
-      } catch {
-        // Если нет субтитров, пробуем через описание
-        try {
-          transcript = execSync(
-            `yt-dlp --quiet --no-warnings --get-description "https://youtube.com/watch?v=${video.id}" | head -c 2000`,
-            { encoding: 'utf8' }
-          ).trim();
-        } catch {
-          transcript = '';
+      // Автоматические субтитры
+      execSync(
+        `yt-dlp --quiet --no-warnings --skip-download --write-auto-sub --sub-lang en --sub-format vtt -o "${tmp}" "${video.url}" 2>/dev/null`,
+        { timeout: 60000 }
+      );
+      const vttFile = `${tmp}.en.vtt`;
+      if (fs.existsSync(vttFile)) {
+        // Чистим VTT → чистый текст (убираем теги, временные метки, дубликаты)
+        const raw = fs.readFileSync(vttFile, 'utf8');
+        try { fs.unlinkSync(vttFile); } catch {}
+
+        const lines = raw.split('\n')
+          .filter(l => l.trim())
+          .filter(l => !l.startsWith('WEBVTT'))
+          .filter(l => !/^\d{2}:\d{2}/.test(l))           // убрать таймкоды
+          .filter(l => !/^[0-9]+$/.test(l.trim()))          // убрать числа
+          .map(l => l.replace(/<[^>]+>/g, '').trim())       // убрать HTML теги
+          .filter(Boolean);
+
+        // Дедупликация соседних строк
+        const deduped = lines.filter((l, i) => i === 0 || l !== lines[i - 1]);
+        const transcript = deduped.join(' ').replace(/\s+/g, ' ').trim();
+
+        if (transcript.length > 500) {
+          log(`✅ Транскрипт: ${transcript.length} символов (~${Math.round(transcript.length/4)} токенов)`);
+          return transcript;
         }
       }
-      
-      if (!transcript || transcript.length < 100) {
-        console.log('⏭️ No useful transcript');
-        return null;
-      }
+    } catch (e) {
+      log(`⚠️  VTT failed: ${e.message.slice(0,80)}`);
+    }
 
-      // Компрессия паттернов через LLM
-      const prompt = `Extract ONLY actionable patterns from this video transcript. Format:
-PROBLEM: [1 sentence]
-SOLUTION: [2-3 sentences]
-CODE_PATTERN: [if applicable, max 5 lines]
-METRICS: [expected improvement]
-TAGS: [comma separated]
-
-Transcript: ${transcript.slice(0, 5000)}`;
-
-      const analysis = execSync(
-        `echo '${prompt.replace(/'/g, "'\\''")}' | oracle -m anthropic/claude-haiku-4-5 --no-cache 2>/dev/null`,
-        { encoding: 'utf8' }
+    // Fallback: описание
+    try {
+      const desc = execSync(
+        `yt-dlp --quiet --no-warnings --get-description "${video.url}" 2>/dev/null`,
+        { encoding: 'utf8', timeout: 15000 }
       ).trim();
+      if (desc.length > 200) {
+        log(`📝 Используем описание (${desc.length} символов)`);
+        return desc;
+      }
+    } catch {}
 
-      const pattern = {
-        videoId: video.id,
-        videoTitle: video.title,
-        topic: video.topic,
-        analysis,
-        timestamp: new Date().toISOString(),
-        tokensSaved: Math.round((transcript.length - analysis.length) / 4), // ~4 chars per token
-        status: 'analyzed'
-      };
+    return null;
+  }
 
-      return pattern;
-    } catch (err) {
-      console.error(`❌ Analysis failed: ${err.message}`);
+  // 3. Глубокий анализ — многоуровневый промпт
+  async deepAnalyze(video, transcript) {
+    log(`🧠 Глубокий анализ...`);
+
+    // Используем ПОЛНЫЙ транскрипт (до 15000 символов)
+    const fullText = transcript.slice(0, 15000);
+    const wordCount = fullText.split(' ').length;
+    log(`   Анализирую ${wordCount} слов из транскрипта`);
+
+    const prompt = `You are an expert AI systems architect analyzing a technical video.
+
+VIDEO: "${video.title}"
+TOPIC: ${video.topic}
+TRANSCRIPT (${wordCount} words):
+${fullText}
+
+Provide a DEEP analysis in this exact format:
+
+## CORE PROBLEM
+[2-3 sentences: what problem does this video address?]
+
+## KEY INSIGHT  
+[The single most important idea from this video in 1-2 sentences]
+
+## SOLUTION APPROACH
+[3-5 sentences: how does the speaker solve the problem?]
+
+## ACTIONABLE STEPS
+1. [First concrete step]
+2. [Second concrete step]
+3. [Third concrete step]
+(up to 5 steps)
+
+## CODE PATTERN
+\`\`\`
+[If code was shown or implied, write the key pattern in <15 lines. If no code, write "N/A"]
+\`\`\`
+
+## METRICS & RESULTS
+[What improvement/result was demonstrated or promised? Be specific with numbers if available]
+
+## APPLY TO ASYSTEM
+[2-3 sentences: how exactly can Forge apply this to ASYSTEM infrastructure/panel/agents?]
+
+## TAGS
+[5-8 comma-separated tags]`;
+
+    const tmpFile = `/tmp/yt-deep-${Date.now()}.txt`;
+    fs.writeFileSync(tmpFile, prompt);
+
+    try {
+      // Используем /api/chat/forge (openclaw gateway → Anthropic)
+      try { fs.unlinkSync(tmpFile); } catch {}
+      const chatResp = execSync(
+        `curl -s -X POST http://localhost:5190/api/chat/forge ` +
+        `-H "Content-Type: application/json" ` +
+        `-H "Authorization: Bearer 5f91b3b7171a9a2af12231b7c6bb3701b039a37a77a7d40e" ` +
+        `-d ${JSON.stringify(JSON.stringify({message: prompt, stream: false}))} 2>/dev/null`,
+        { encoding: 'utf8', timeout: 120000, maxBuffer: 4 * 1024 * 1024 }
+      );
+      // Парсим SSE: ищем done event с reply
+      const doneMatch = chatResp.match(/"done":true.*?"reply":"(.*?)","agent"/);
+      const analysis = doneMatch 
+        ? doneMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"')
+        : chatResp.split('\n').filter(l => l.includes('"text"') && !l.includes('connecting')).map(l => {
+            try { return JSON.parse(l.replace('data: ','')).text || ''; } catch { return ''; }
+          }).join('').trim();
+
+      log(`✅ Анализ: ${analysis.length} символов`);
+      return analysis;
+    } catch (e) {
+      try { fs.unlinkSync(tmpFile); } catch {}
+      log(`❌ Анализ failed: ${e.message.slice(0, 100)}`);
       return null;
     }
   }
 
-  // 3. КОМПРЕССИЯ - сохранить только важное
-  savePattern(pattern) {
-    if (!pattern) return;
-    
-    // Сохраняем в structured DB
-    this.db.patterns.push(pattern);
-    this.db.videos.push({ 
-      id: pattern.videoId, 
-      title: pattern.videoTitle,
-      analyzedAt: pattern.timestamp 
-    });
-    
-    // Сохраняем паттерн в отдельный файл
-    const filename = `${pattern.videoId}.md`;
-    const content = `# ${pattern.videoTitle}\n\n${pattern.analysis}\n\n---\nTokens saved: ${pattern.tokensSaved}`;
-    fs.writeFileSync(path.join(PATTERNS_DIR, filename), content);
-    
-    // Обновляем DB
-    fs.writeFileSync(LEARNING_DB, JSON.stringify(this.db, null, 2));
-    
-    console.log(`✅ Pattern saved: ${pattern.tokensSaved} tokens compressed`);
-  }
-
-  // 4. ТЕСТ - проверить применимость паттерна
-  async testPattern(pattern) {
-    console.log(`🧪 Testing pattern implementation`);
-    
-    // Создаём тестовый sub-agent для проверки
-    const testTask = `Apply this pattern in isolation and validate:
-${pattern.analysis}
-
-Create minimal test implementation and report success metrics.`;
-
-    try {
-      const result = execSync(
-        `echo '${testTask.replace(/'/g, "'\\''")}' | openclaw agent --local --model anthropic/claude-haiku-4-5 --json 2>/dev/null`,
-        { encoding: 'utf8', timeout: 60000 }
-      );
-      
-      const success = result.includes('success') || result.includes('implemented');
-      
-      this.metrics.tests.push({
-        patternId: pattern.videoId,
-        success,
-        timestamp: new Date().toISOString()
-      });
-      
-      fs.writeFileSync(METRICS_DB, JSON.stringify(this.metrics, null, 2));
-      
-      return success;
-    } catch (err) {
-      console.error(`❌ Test failed: ${err.message}`);
-      return false;
-    }
-  }
-
-  // 5. ВНЕДРЕНИЕ - применить к системе
-  async implementPattern(pattern) {
-    if (pattern.status === 'implemented') return;
-    
-    console.log(`🚀 Implementing pattern system-wide`);
-    
-    // Добавляем в Inter-Agent Memory для всех агентов
-    const sharedMemory = {
-      content: pattern.analysis,
-      agent: 'learning-agent',
-      tags: ['youtube-learning', pattern.topic, 'auto-applied']
+  // 4. Сохранить в Qdrant + файл
+  async saveResult(video, transcript, analysis) {
+    const pattern = {
+      videoId:    video.id,
+      videoTitle: video.title,
+      videoUrl:   video.url,
+      topic:      video.topic,
+      duration:   video.duration,
+      analysis,
+      transcriptLength: transcript.length,
+      analyzedAt: new Date().toISOString(),
     };
-    
+
+    // Файл паттерна
+    const filename = path.join(PATTERNS_DIR, `${video.id}.md`);
+    fs.writeFileSync(filename, `# ${video.title}\n\nURL: ${video.url}\nТема: ${video.topic}\nДата: ${new Date().toISOString().slice(0,10)}\n\n${analysis}`);
+    log(`📁 Сохранено: patterns/${video.id}.md`);
+
+    // DB
+    this.db.videos.push({ id: video.id, title: video.title, analyzedAt: pattern.analyzedAt });
+    this.db.patterns.push(pattern);
+    this.save();
+
+    // Qdrant
+    try {
+      const content = `[${video.topic}] ${video.title}\n\n${analysis}`;
+      const tmpQ = `/tmp/qdrant-content-${Date.now()}.txt`;
+      fs.writeFileSync(tmpQ, content);
+      execSync(
+        `OPENAI_API_KEY=${OPENAI_KEY} python3 $HOME/.openclaw/workspace/scripts/memory_write.py ` +
+        `--content "$(cat ${tmpQ})" ` +
+        `--type pattern --tags "youtube,learning,${video.topic.replace(/\s+/g,'-').slice(0,30)}" 2>/dev/null`,
+        { encoding: 'utf8', timeout: 25000 }
+      );
+      try { fs.unlinkSync(tmpQ); } catch {}
+      log(`🔍 Qdrant: паттерн сохранён`);
+    } catch (e) {
+      log(`⚠️  Qdrant skip: ${e.message.slice(0,50)}`);
+    }
+
+    return pattern;
+  }
+
+  // 5. Отправить краткий отчёт в Telegram
+  async sendReport(video, analysis) {
+    const lines = analysis.split('\n');
+    const insightLine = lines.find(l => l.startsWith('## KEY INSIGHT')) ;
+    const insightIdx = lines.indexOf(insightLine);
+    const insight = insightIdx >= 0
+      ? lines.slice(insightIdx + 1, insightIdx + 3).join(' ').trim()
+      : analysis.slice(0, 200);
+
+    const applyLine = lines.find(l => l.startsWith('## APPLY TO ASYSTEM'));
+    const applyIdx = lines.indexOf(applyLine);
+    const apply = applyIdx >= 0
+      ? lines.slice(applyIdx + 1, applyIdx + 3).join(' ').trim()
+      : '';
+
+    const msg = `🎓 *YouTube Learning*\n\n` +
+      `📺 [${video.title.slice(0,60)}](${video.url})\n` +
+      `⏱ ${Math.round(video.duration/60)}мин | тема: ${video.topic}\n\n` +
+      `💡 *Инсайт:* ${insight.slice(0, 300)}\n\n` +
+      (apply ? `🔧 *Для ASYSTEM:* ${apply.slice(0, 200)}` : '');
+
     try {
       execSync(
-        `curl -X POST http://localhost:5190/api/memory/shared -H "Content-Type: application/json" -d '${JSON.stringify(sharedMemory)}' 2>/dev/null`
+        `curl -s -X POST "https://api.telegram.org/bot8465084666:AAGAoSMxdzkSc5m39ItRX2VaSrmYFidxSSo/sendMessage" ` +
+        `-H "Content-Type: application/json" ` +
+        `-d '{"chat_id":"861276843","text":${JSON.stringify(msg)},"parse_mode":"Markdown","disable_web_page_preview":true}' 2>/dev/null`,
+        { timeout: 10000 }
       );
-      
-      pattern.status = 'implemented';
-      this.db.implementations.push({
-        patternId: pattern.videoId,
-        timestamp: new Date().toISOString()
-      });
-      
-      fs.writeFileSync(LEARNING_DB, JSON.stringify(this.db, null, 2));
-      
-      console.log(`✅ Pattern shared with all agents`);
-      return true;
-    } catch (err) {
-      console.error(`❌ Implementation failed: ${err.message}`);
-      return false;
-    }
+      log(`📱 Отчёт отправлен в Telegram`);
+    } catch {}
   }
 
-  // 6. МЕТРИКИ - отследить эффективность
-  calculateROI() {
-    const totalTokensSaved = this.db.patterns.reduce((sum, p) => sum + (p.tokensSaved || 0), 0);
-    const successRate = this.metrics.tests.filter(t => t.success).length / Math.max(1, this.metrics.tests.length);
-    const implementedCount = this.db.implementations.length;
-    
-    return {
-      videosAnalyzed: this.db.videos.length,
-      patternsExtracted: this.db.patterns.length,
-      patternsImplemented: implementedCount,
-      tokensSaved: totalTokensSaved,
-      avgCompression: Math.round(totalTokensSaved / Math.max(1, this.db.patterns.length)),
-      successRate: Math.round(successRate * 100),
-      estimatedMonthlySavings: Math.round(totalTokensSaved * 0.003 * 30) // ~$0.003 per 1K tokens
-    };
-  }
+  // ГЛАВНЫЙ ЦИКЛ — одно видео, глубокое изучение
+  async runCycle() {
+    const startTime = Date.now();
+    log(`\n${'='.repeat(60)}`);
+    log(`🎓 YouTube Deep Learning — старт цикла`);
+    log(`Видео в базе: ${this.db.videos.length} | Паттернов: ${this.db.patterns.length}`);
 
-  // MAIN LOOP - автономный цикл обучения
-  async runLearningCycle() {
-    console.log('🎓 YouTube Learning Agent - Starting cycle');
-    
-    // Выбираем случайную тему
-    const topic = this.topics[Math.floor(Math.random() * this.topics.length)];
-    
-    // 1. Поиск новых видео
-    const videos = await this.searchVideos(topic, 2);
-    
-    for (const video of videos) {
-      // 2. Анализ
-      const pattern = await this.analyzeVideo(video);
-      if (!pattern) continue;
-      
-      // 3. Компрессия
-      this.savePattern(pattern);
-      
-      // 4. Тест
-      const testPassed = await this.testPattern(pattern);
-      
-      // 5. Внедрение (только если тест прошёл)
-      if (testPassed) {
-        await this.implementPattern(pattern);
-      } else {
-        console.log('⏭️ Skipping implementation - test failed');
+    try {
+      // 1. Выбрать тему
+      const topic = await this.chooseTopic();
+
+      // 2. Найти одно видео
+      const video = await this.findVideo(topic);
+      if (!video) {
+        log(`❌ Не найдено новых видео по теме "${topic}"`);
+        return;
       }
-      
-      // Пауза между видео
-      await new Promise(r => setTimeout(r, 5000));
+
+      // 3. Транскрипт
+      const transcript = await this.getTranscript(video);
+      if (!transcript) {
+        log(`❌ Нет транскрипта для ${video.id}`);
+        // Всё равно записываем в seen
+        this.db.videos.push({ id: video.id, title: video.title, analyzedAt: new Date().toISOString(), noTranscript: true });
+        this.save();
+        return;
+      }
+
+      // 4. Глубокий анализ
+      const analysis = await this.deepAnalyze(video, transcript);
+      if (!analysis) {
+        log(`❌ Анализ не получился`);
+        return;
+      }
+
+      // 5. Сохранить
+      await this.saveResult(video, transcript, analysis);
+
+      // 6. Отчёт
+      await this.sendReport(video, analysis);
+
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      log(`\n✅ Цикл завершён за ${elapsed}с`);
+      log(`   Видео: ${this.db.videos.length} | Паттернов: ${this.db.patterns.length}`);
+      log(`${'='.repeat(60)}\n`);
+
+    } catch (e) {
+      log(`💥 Цикл упал: ${e.message}`);
+      log(e.stack?.slice(0, 500) || '');
     }
-    
-    // 6. Отчёт по метрикам
-    const roi = this.calculateROI();
-    console.log('\n📊 Learning ROI:', roi);
-    
-    // Сохраняем отчёт
-    fs.writeFileSync(
-      path.join(__dirname, 'learning-report.json'),
-      JSON.stringify({ timestamp: new Date().toISOString(), ...roi }, null, 2)
-    );
-    
-    return roi;
   }
 }
 
-// CLI interface
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const agent = new YouTubeLearningAgent();
-  
-  const command = process.argv[2];
-  
-  switch(command) {
-    case 'cycle':
-      agent.runLearningCycle();
-      break;
-      
-    case 'search':
-      const topic = process.argv[3] || 'multi agent orchestration';
-      agent.searchVideos(topic, 5).then(videos => {
-        console.log('Found videos:', videos);
+// ── CLI ────────────────────────────────────────────────────────────────────
+const agent = new DeepLearningAgent();
+const cmd = process.argv[2] || 'cycle';
+
+switch (cmd) {
+  case 'cycle':
+    await agent.runCycle();
+    break;
+
+  case 'continuous':
+    log('🔄 Continuous mode: цикл каждые 3 часа');
+    await agent.runCycle();
+    setInterval(() => agent.runCycle(), 3 * 60 * 60 * 1000);
+    break;
+
+  case 'metrics':
+    console.log('📊 База знаний:');
+    console.log(`  Видео: ${agent.db.videos.length}`);
+    console.log(`  Паттернов: ${agent.db.patterns.length}`);
+    if (agent.db.patterns.length > 0) {
+      console.log('\nПоследние 5:');
+      agent.db.patterns.slice(-5).forEach(p => {
+        console.log(`  📺 ${p.videoTitle?.slice(0,60)}`);
+        console.log(`     тема: ${p.topic} | ${new Date(p.analyzedAt).toLocaleDateString()}`);
       });
-      break;
-      
-    case 'metrics':
-      console.log('📊 Current metrics:', agent.calculateROI());
-      break;
-      
-    case 'continuous':
-      // Запускаем каждые 2 часа
-      console.log('🔄 Starting continuous learning mode (every 2 hours)');
-      agent.runLearningCycle();
-      setInterval(() => agent.runLearningCycle(), 2 * 60 * 60 * 1000);
-      break;
-      
-    default:
-      console.log(`Usage:
-  node youtube-learning-agent.mjs cycle      # Run one learning cycle
-  node youtube-learning-agent.mjs search <topic>  # Search videos
-  node youtube-learning-agent.mjs metrics    # Show ROI metrics  
-  node youtube-learning-agent.mjs continuous # Run every 2 hours`);
-  }
+    }
+    break;
+
+  default:
+    console.log(`Usage: node youtube-learning-agent.mjs [cycle|continuous|metrics]`);
 }
 
-export default YouTubeLearningAgent;
+export default DeepLearningAgent;

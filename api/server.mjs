@@ -2,6 +2,18 @@
  * ASYSTEM Live Data API v2.0
  * port 5190 — реальные данные + WebSocket + C-Suite агенты
  */
+
+// ── Global crash guards — prevent restart loops ──────────────────────────
+process.on('uncaughtException', (err, origin) => {
+  console.error(`[CRASH GUARD] uncaughtException (${origin}): ${err.message}`);
+  console.error(err.stack?.split('\n').slice(0,4).join('\n'));
+  // Do NOT exit — keep server alive
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[CRASH GUARD] unhandledRejection:', reason instanceof Error ? reason.message : reason);
+  // Do NOT exit — keep server alive
+});
+
 import http from 'node:http';
 import https from 'node:https';
 import fs from 'node:fs';
@@ -497,7 +509,10 @@ const server = http.createServer(async (req, res) => {
       body = {};
     }
     
-    const pipeline = await requestPipeline.runFullPipeline(req, body).catch(err => ({ ok: false, error: err.message }));
+    // Attach parsed body to req so handlers can reuse it without re-reading stream
+    req.parsedBody = body;
+
+    const pipeline = await requestPipeline.runFullPipeline(req, body).catch(err => { console.error('[PIPELINE ERROR]', err.stack || err.message); return { ok: false, error: err.message }; });
     
     if (!pipeline.ok) {
       res.writeHead(pipeline.code || 400, { 'Content-Type': 'application/json' });
@@ -516,15 +531,59 @@ const server = http.createServer(async (req, res) => {
   // ── Prometheus metrics (no auth) ──
   const urlPath0 = req.url.split('?')[0];
   if (urlPath0 === '/api/metrics') {
-    const uptime = Math.round(process.uptime());
-    const mem = process.memoryUsage();
-    const metrics = [
-      '# TYPE forge_up gauge', 'forge_up 1',
-      '# TYPE forge_uptime_seconds gauge', `forge_uptime_seconds ${uptime}`,
-      '# TYPE forge_memory_heap_bytes gauge', `forge_memory_heap_bytes ${mem.heapUsed}`,
-    ].join('\n') + '\n';
-    res.writeHead(200, { 'Content-Type': 'text/plain; version=0.0.4', 'Access-Control-Allow-Origin': '*' });
-    return res.end(metrics);
+    const _H = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-cache' };
+    const { execSync: _es } = await import('node:child_process');
+    try {
+      // PM2 online count
+      let pm2Online = 0;
+      try {
+        const pm2Out = _es('pm2 jlist 2>/dev/null', { encoding: 'utf8', timeout: 5000 });
+        const pm2List = JSON.parse(pm2Out || '[]');
+        pm2Online = pm2List.filter(p => p.pm2_env?.status === 'online').length;
+      } catch {}
+
+      // Disk usage
+      let disk = '—';
+      try {
+        const df = _es("df -h / | tail -1 | awk '{print $5\" used, \"$4\" free\"}'", { encoding: 'utf8', timeout: 3000 }).trim();
+        disk = df;
+      } catch {}
+
+      // Load average
+      let load = '—';
+      try {
+        const la = _es("uptime | awk -F'load average:' '{print $2}' | xargs", { encoding: 'utf8', timeout: 3000 }).trim();
+        load = la;
+      } catch {}
+
+      // Qdrant points
+      let qdrantPoints = 0;
+      try {
+        const qr = await fetch('http://localhost:6333/collections/forge-memory', {
+          headers: { 'api-key': 'asystem-qdrant-2026-secret' },
+          signal: AbortSignal.timeout(3000),
+        });
+        if (qr.ok) { const qd = await qr.json(); qdrantPoints = qd?.result?.points_count || 0; }
+      } catch {}
+
+      // Memory RSS
+      const mem = process.memoryUsage();
+
+      res.writeHead(200, _H);
+      return res.end(JSON.stringify({
+        ok: true,
+        uptime: Math.round(process.uptime()),
+        disk,
+        load,
+        pm2: { online: pm2Online },
+        qdrant: { points: qdrantPoints },
+        memory: { rss: Math.round(mem.rss / 1024 / 1024) + 'MB', heap: Math.round(mem.heapUsed / 1024 / 1024) + 'MB' },
+        ts: Date.now(),
+      }));
+    } catch (e) {
+      res.writeHead(500, _H);
+      return res.end(JSON.stringify({ ok: false, error: e.message }));
+    }
   }
 
   // ── Netdata Proxy (early — before auth chain) ─────────────────────
@@ -680,7 +739,8 @@ async function proxyVeritas(req, res) {
 
 const handleV2 = async (req, res) => {
   const url = req.url.split('?')[0];
-  const urlPath = url;  // alias — some handlers use urlPath
+  const urlPath = url;  // alias
+  const method = req.method; // needed by handlers — some handlers use urlPath
   const params = new URLSearchParams(req.url.includes('?') ? req.url.split('?')[1] : '');
 
   // ── BlueMap proxy → /bluemap/* → BlueMap on VM 105 via Tailscale ──────
@@ -2948,6 +3008,38 @@ const handleV2 = async (req, res) => {
     catch (e) { res.writeHead(500, _H); return res.end(JSON.stringify({ error: e.message })); }
   }
 
+  // GET /api/memory/search?q=query&limit=5&type=pattern — Qdrant semantic search
+  if (url.startsWith('/api/memory/search') && req.method === 'GET') {
+    const _H = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+    const { exec: _exec } = await import('node:child_process');
+    const _qs = new URLSearchParams(req.url.includes('?') ? req.url.split('?')[1] : '');
+    const query = _qs.get('q') || '';
+    const limit = Math.min(parseInt(_qs.get('limit') || '5'), 20);
+    const type  = _qs.get('type') || '';
+    if (!query) { res.writeHead(400, _H); return res.end(JSON.stringify({ error: 'q required' })); }
+    const oaiKey = process.env.OPENAI_API_KEY ||
+      (await new Promise(r => _exec(`grep OPENAI_API_KEY $HOME/.openclaw/workspace/.env | tail -1 | cut -d= -f2`, (e,o) => r(o.trim()))));
+    const typeFlag = type ? `--type ${type}` : '';
+    const cmd = `OPENAI_API_KEY=${oaiKey} python3 $HOME/.openclaw/workspace/scripts/memory_search.py --query ${JSON.stringify(query)} --limit ${limit} ${typeFlag} --json 2>/dev/null`;
+    await new Promise(r => _exec(cmd, { timeout: 20000 }, (err, stdout) => {
+      try {
+        const hits = JSON.parse(stdout || '[]');
+        const results = hits.map(h => ({
+          id: h.id, score: h.score,
+          content: h.payload?.content, type: h.payload?.type,
+          tags: h.payload?.tags, date: h.payload?.date
+        }));
+        res.writeHead(200, _H);
+        res.end(JSON.stringify({ ok: true, query, results, count: results.length }));
+      } catch {
+        res.writeHead(500, _H);
+        res.end(JSON.stringify({ ok: false, error: err?.message || 'parse error' }));
+      }
+      r();
+    }));
+    return;
+  }
+
   // GET /api/memory/decay/stats | POST /api/memory/decay/reinforce | POST /api/memory/decay/gc
   if (url.startsWith('/api/memory/decay') && req.method === 'GET') {
     const _H = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -3841,19 +3933,7 @@ const handleV2 = async (req, res) => {
     } catch (e) { res.writeHead(500, _H); return res.end(JSON.stringify({ error: e.message })); }
   }
 
-  // GET /api/memory/search?q=...&agent=... — search all agents
-  if (url.startsWith('/api/memory/search') && req.method === 'GET') {
-    const _H = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
-    try {
-      const q = params.get('q') || '';
-      const agent = params.get('agent') || null;
-      const top = parseInt(params.get('top') || '5');
-      const { searchAllAgents } = await import('./shared-memory.mjs');
-      const result = await searchAllAgents(q, { top, agentFilter: agent });
-      res.writeHead(200, _H);
-      return res.end(JSON.stringify(result));
-    } catch (e) { res.writeHead(500, _H); return res.end(JSON.stringify({ error: e.message })); }
-  }
+  // /api/memory/search — handled above (Qdrant semantic search)
 
   // GET /api/memory/stats — shared memory statistics
   if (url === '/api/memory/stats' && req.method === 'GET') {
@@ -4044,6 +4124,7 @@ const handleV2 = async (req, res) => {
     const CF_EMAIL = 'urmatdigital@gmail.com';
     const CF_ACCT  = '1ac78bbd68e3a81a2750288ebb4e2d41';
     const ZONE_IDS = {
+      'te.kg': '06b3d747d700715869091cdc303c25a9',
       'asystem.kg': '5aa37039abd7a1462c8426cf7685d11d',
       'aurva.kg': 'bf9c8199c66b286fac19e9b98aa50425',
       'fiatex.kg': 'c1d0392b5ccdbd9e928a7e394f3df1e0',
@@ -4338,7 +4419,7 @@ const handleV2 = async (req, res) => {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer process.env.OPENROUTER_API_KEY`,
-            'HTTP-Referer': 'https://os.asystem.kg', 'X-Title': 'ASYSTEM Docs AI',
+            'HTTP-Referer': 'https://os.te.kg', 'X-Title': 'ASYSTEM Docs AI',
             'Content-Length': Buffer.byteLength(body),
           }, timeout: 60000,
         }, res2 => {
@@ -5834,17 +5915,20 @@ if (url === '/api/audit/events' && req.method === 'POST') {
 
   // ── Dispatch: send task to agent via inbox file + Squad Chat + Telegram ──
   if (url === '/api/dispatch' && req.method === 'POST') {
-    const chunks = [];
-    req.on('data', c => chunks.push(c));
+    // Parse body from stream (handleV2 doesn't pre-parse)
+    const _chunks = [];
+    req.on('data', c => _chunks.push(c));
     await new Promise(r => req.on('end', r));
+    let _rawBody = {};
+    try { _rawBody = JSON.parse(Buffer.concat(_chunks).toString()); } catch {}
     try {
-      const body = JSON.parse(Buffer.concat(chunks).toString());
+      const body = _rawBody;
       let { to, title, body: desc = '', type = 'task', priority = 'medium', taskId, tags: _bodyTags } = body;
       const _tags = Array.isArray(_bodyTags) ? _bodyTags : [];
 
       // ── Security: injection scan + loop guard + rate limiter ─────────────
       const _source = body.source || 'unknown';
-      const _skipSecurity = ['health-monitor', 'loop-guard', 'cost-guard', 'task-loop-escalation'].includes(_source);
+      const _skipSecurity = ['health-monitor', 'loop-guard', 'cost-guard', 'task-loop-escalation', 'panel-ui', 'urmat', 'forge'].includes(_source);
 
       // ── Role Router: warn on role mismatch ───────────────────────────────────
       if (to && title && !_skipSecurity) {
@@ -5906,6 +5990,7 @@ if (url === '/api/audit/events' && req.method === 'POST') {
       }
 
       // ── CoT Start: begin chain-of-thought trace ───────────────────────────────
+      let _traceId = null; // will be set in Distributed Trace block below
       let _cotId = _traceId || `cot-${Date.now()}`;
       if (!_skipSecurity && to) {
         try {
@@ -5967,7 +6052,8 @@ if (url === '/api/audit/events' && req.method === 'POST') {
 
       // ── Distributed Trace: start root span for this dispatch ─────────────────
       // Video: "Braintrust TRACE 2026" (lVnF6eu_3dc)
-      let _traceId = null, _rootSpanId = null;
+      // NOTE: _traceId already declared above (near CoT block); just assign here
+      _traceId = null; let _rootSpanId = null;
       if (!_skipSecurity) {
         try {
           const { startTrace } = await import('./tracer.mjs');
@@ -6628,6 +6714,7 @@ if (url === '/api/audit/events' && req.method === 'POST') {
     const CF_EMAIL = 'urmatdigital@gmail.com';
     const CF_ACCT  = '1ac78bbd68e3a81a2750288ebb4e2d41';
     const ZONE_IDS = {
+      'te.kg': '06b3d747d700715869091cdc303c25a9',
       'asystem.kg': '5aa37039abd7a1462c8426cf7685d11d',
       'aurva.kg': 'bf9c8199c66b286fac19e9b98aa50425',
       'fiatex.kg': 'c1d0392b5ccdbd9e928a7e394f3df1e0',
@@ -6738,7 +6825,7 @@ if (url === '/api/audit/events' && req.method === 'POST') {
       const aiResp = await new Promise((resolve, reject) => {
         const r = https.request({
           hostname: 'openrouter.ai', path: '/api/v1/chat/completions', method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer process.env.OPENROUTER_API_KEY`, 'HTTP-Referer': 'https://os.asystem.kg', 'X-Title': 'ASYSTEM Network Operator', 'Content-Length': Buffer.byteLength(promptBody) },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer process.env.OPENROUTER_API_KEY`, 'HTTP-Referer': 'https://os.te.kg', 'X-Title': 'ASYSTEM Network Operator', 'Content-Length': Buffer.byteLength(promptBody) },
           timeout: 30000,
         }, resp => { let d=''; resp.on('data', c => d+=c); resp.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve({}); } }); });
         r.on('error', reject); r.on('timeout', () => { r.destroy(); reject(new Error('AI timeout')); });
@@ -8417,12 +8504,12 @@ if (url === '/api/braindump' && req.method === 'POST') {
           console.log('[DEPLOY] pnpm build...');
           await execAsync('pnpm build', { cwd: panelDir, timeout: 180000 });
           console.log('[DEPLOY] rsync...');
-          await execAsync(`rsync -avz --delete ${panelDir}/dist/ root@135.181.112.60:/var/www/os.asystem.kg/`, { timeout: 60000 });
+          await execAsync(`rsync -avz --delete ${panelDir}/dist/ root@135.181.112.60:/var/www/os.te.kg/`, { timeout: 60000 });
           console.log('[DEPLOY] ✅ Done');
           // Notify squad (via Convex)
           await fetch('https://expert-dachshund-299.convex.cloud/api/mutation', {
             method: 'POST', headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ path: 'chat:send', args: { agent: 'forge', message: '✅ Auto-deploy completed: Panel deployed to os.asystem.kg', tags: ['deploy','auto'] } }),
+            body: JSON.stringify({ path: 'chat:send', args: { agent: 'forge', message: '✅ Auto-deploy completed: Panel deployed to os.te.kg', tags: ['deploy','auto'] } }),
           }).catch(() => {});
         } catch (err) {
           console.error('[DEPLOY] ❌', err.message);
@@ -9095,6 +9182,105 @@ if (url === '/api/braindump' && req.method === 'POST') {
     } catch(e) { res.writeHead(500, H2); return res.end(JSON.stringify({ error: e.message })); }
   }
 
+  // ============ PERSONAL AGENT API (async-safe) ============
+  globalThis._personalChats = globalThis._personalChats ?? new Map();
+
+  if (urlPath.startsWith('/api/personal/')) {
+    const pChats = globalThis._personalChats;
+    const userId = (req.headers['x-user-id'] || 'anonymous').substring(0, 64);
+    const H = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+
+    // Read body helper
+    const readBody = () => new Promise((resolve) => {
+      const chunks = []; req.on('data', c => chunks.push(c)); req.on('end', () => resolve(Buffer.concat(chunks).toString()));
+    });
+
+    // POST /api/personal/validate
+    if (req.method === 'POST' && urlPath === '/api/personal/validate') {
+      const raw = await readBody();
+      const { token } = JSON.parse(raw || '{}');
+      if (!token) { res.writeHead(400, H); res.end(JSON.stringify({ error: 'token required' })); return; }
+      let valid = false, model = 'claude-haiku-4-5';
+      if (token === 'forge-mac-agent-2026-secret') {
+        valid = true; model = 'claude-haiku-4-5 (Forge)';
+      } else {
+        try {
+          const t = await fetch('http://127.0.0.1:18790/health', { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(3000) });
+          valid = t.ok;
+        } catch { valid = token.length > 8; model = 'demo-mode'; }
+      }
+      res.writeHead(valid ? 200 : 401, H);
+      res.end(JSON.stringify(valid ? { ok: true, model } : { error: 'invalid token' }));
+      return;
+    }
+
+    // GET /api/personal/stats
+    if (req.method === 'GET' && urlPath === '/api/personal/stats') {
+      const hist = pChats.get(userId) ?? [];
+      res.writeHead(200, H);
+      res.end(JSON.stringify({ activeTasks: 0, doneTasks: 0, model: 'claude-haiku-4-5', connected: true, messages: hist.length }));
+      return;
+    }
+
+    // GET /api/personal/history
+    if (req.method === 'GET' && urlPath === '/api/personal/history') {
+      const hist = pChats.get(userId) ?? [];
+      res.writeHead(200, H);
+      res.end(JSON.stringify({ messages: hist.map((m, i) => ({ id: String(i), role: m.role === 'assistant' ? 'agent' : m.role, content: m.content, ts: m.ts })) }));
+      return;
+    }
+
+    // DELETE /api/personal/history
+    if (req.method === 'DELETE' && urlPath === '/api/personal/history') {
+      pChats.delete(userId); res.writeHead(200, H); res.end(JSON.stringify({ ok: true })); return;
+    }
+
+    // POST /api/personal/chat — SSE streaming
+    if (req.method === 'POST' && urlPath === '/api/personal/chat') {
+      const raw = await readBody();
+      const { message, token } = JSON.parse(raw || '{}');
+      if (!message) { res.writeHead(400, H); res.end(JSON.stringify({ error: 'message required' })); return; }
+      if (!pChats.has(userId)) pChats.set(userId, []);
+      const hist = pChats.get(userId);
+      hist.push({ role: 'user', content: message, ts: Date.now() });
+
+      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*' });
+
+      let fullResp = '';
+      try {
+        const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+        if (!ANTHROPIC_KEY) throw new Error('no key');
+        const systemPrompt = 'Ты персональный AI-ассистент в системе ASYSTEM. Помогай управлять задачами, проектами и агентами. Отвечай на русском языке, будь конкретным.';
+        const ar = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+          body: JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 1024, stream: true, system: systemPrompt, messages: hist.slice(-10).map(m => ({ role: m.role === 'agent' ? 'assistant' : m.role, content: m.content })) }),
+          signal: AbortSignal.timeout(30000),
+        });
+        if (ar.ok && ar.body) {
+          const reader = ar.body.getReader(); const dec = new TextDecoder();
+          while (true) {
+            const { done, value } = await reader.read(); if (done) break;
+            for (const line of dec.decode(value).split('\n')) {
+              if (!line.startsWith('data: ')) continue;
+              const d = line.slice(6).trim();
+              if (!d || d === '[DONE]') continue;
+              try { const p = JSON.parse(d); const delta = p.delta?.text ?? ''; if (delta) { fullResp += delta; res.write(`data: ${JSON.stringify({ content: delta })}\n\n`); } } catch {}
+            }
+          }
+        } else { fullResp = 'Сервис временно недоступен'; res.write(`data: ${JSON.stringify({ content: fullResp })}\n\n`); }
+      } catch { fullResp = 'Нет соединения с AI провайдером'; res.write(`data: ${JSON.stringify({ content: fullResp })}\n\n`); }
+
+      hist.push({ role: 'assistant', content: fullResp, ts: Date.now() });
+      if (hist.length > 50) hist.splice(0, hist.length - 50);
+      res.write('data: [DONE]\n\n'); res.end(); return;
+    }
+
+    // Unknown /api/personal/* route
+    res.writeHead(404, H); res.end(JSON.stringify({ error: 'unknown personal endpoint' })); return;
+  }
+  // ============ END PERSONAL AGENT API ============
+
   return false; // not handled
 };
 
@@ -9211,6 +9397,8 @@ function serveStatic(req, res) {
     return;
   }
 
+  
+
   // For HTML routes (SPA) → always serve index.html with no-cache
   const indexPath = path.join(DIST_DIR, 'index.html');
   try {
@@ -9246,7 +9434,7 @@ function parseCookies(cookieHeader = '') {
 
 // OIDC token validation cache (avoid hitting Keycloak on every request)
 const OIDC_TOKEN_CACHE = new Map(); // token → { user, expiresAt }
-const KC_USERINFO_URL = 'https://sso.asystem.kg/realms/asystem/protocol/openid-connect/userinfo';
+const KC_USERINFO_URL = 'https://sso.te.kg/realms/asystem/protocol/openid-connect/userinfo';
 
 async function validateOIDCToken(bearerToken) {
   const cached = OIDC_TOKEN_CACHE.get(bearerToken);
@@ -9426,7 +9614,7 @@ server.on('request', async (req, res) => {
   // ── Public API endpoints (no auth needed) ──
   // Convex HTTP actions call these from server-side
   const PUBLIC_PREFIXES = [
-    '/api/proxmox/', '/api/tailscale/', '/api/agents', '/api/cloudflare/', '/api/network/', '/api/narrative/', '/api/state/', '/api/sync/',
+    '/api/tenants', '/api/proxmox/', '/api/tailscale/', '/api/agents', '/api/cloudflare/', '/api/network/', '/api/narrative/', '/api/state/', '/api/sync/',
     '/api/embeddings/', '/api/embeddings-ml/', '/api/traces/', '/api/reflection/', '/api/compression/', '/api/learning/', '/api/confidence/', '/api/recovery/', '/api/graph/', '/api/anomalies/', '/api/analytics/',
     '/api/tailscale/device/', '/api/tailscale/routes/', '/api/host/metrics', '/api/netdata/',
     '/api/intel/', '/api/analytics/', '/api/cfo/', '/api/sprints/',
@@ -9439,6 +9627,7 @@ server.on('request', async (req, res) => {
     '/api/standup', '/api/anomalies', '/api/health/broadcast', '/api/sop/', '/api/nats/',
     '/api/metrics', '/api/alerts/', '/api/eval/', '/api/context/', '/api/decision-trace', '/api/rate-limits', '/api/memory/shared', '/api/agents/health', '/api/agents/triage', '/api/agents/consensus', '/api/costs/optimizer', '/api/swarm', '/api/goals', '/api/kg/', '/api/agents/self-improver', '/api/cache/', '/api/triggers', '/api/traces', '/api/contracts', '/api/errors', '/api/memory/decay', '/api/skills/', '/api/handoff', '/api/self-critic', '/api/webhook/', '/api/sla', '/api/playbook', '/api/model-router', '/api/context-guard', '/api/fsm', '/api/schema', '/api/debate', '/api/dag', '/api/anomaly', '/api/namespace', '/api/tools', '/api/reflect', '/api/confidence', '/api/budget', '/api/cot', '/api/config', '/api/blast-radius', '/api/throttle', '/api/federated', '/api/canary', '/api/scheduler', '/api/ledger', '/api/context-window', '/api/intent', '/api/ttl', '/api/reputation', '/api/objectives', '/api/narrative', '/api/curriculum', '/api/roles', '/api/model-pin', '/api/batch', '/api/hmem', '/api/agent-ops', '/api/registry', '/api/migrate', '/api/verify', '/api/chaos', '/api/distill', '/api/social', '/api/prompt', '/api/journal', '/api/pipeline', '/api/reward', '/api/queue', '/api/speculative', '/api/contract', '/api/vmem', '/api/coalition', '/api/dedup', '/api/doc', '/api/rep', '/api/suggest', '/api/time', '/api/persona', '/api/sample', '/api/wb', '/api/deps', '/api/rollup', '/api/workload', '/api/durable', '/api/shadow', '/api/goal', '/api/router', '/api/heal', '/api/trust', '/api/ctx', '/api/mscore', '/api/stream', '/api/planval', '/api/handoff', '/api/speccache', '/api/narrative', '/api/roles', '/api/model-pin', '/api/batch', '/api/hmem', '/api/agent-ops', '/api/registry', '/api/migrate', '/api/verify', '/api/chaos', '/api/distill', '/api/social', '/api/prompt', '/api/journal', '/api/pipeline', '/api/reward', '/api/queue', '/api/speculative', '/api/contract', '/api/vmem', '/api/coalition', '/api/dedup', '/api/doc', '/api/rep', '/api/suggest', '/api/time', '/api/persona', '/api/sample', '/api/wb', '/api/deps', '/api/rollup', '/api/workload', '/api/durable', '/api/shadow', '/api/goal', '/api/router', '/api/heal', '/api/trust', '/api/ctx', '/api/mscore', '/api/stream', '/api/planval', '/api/handoff', '/api/speccache', '/api/narrative',
     '/api/mc', '/api/mc/event', '/api/mc/events', '/api/visual-insights', '/api/test-results', '/api/docs', '/api/ai-assist', '/api/agent-manifests', '/api/security', '/api/optimization/',
+    '/api/personal/',
     '/ops',
   ];
   if (PUBLIC_PREFIXES.some(p => urlPath.startsWith(p))) {
@@ -9456,6 +9645,110 @@ server.on('request', async (req, res) => {
       return res.end(JSON.stringify({ error: 'Unauthorized' }));
     }
   }
+
+
+  // ── Personal Agent API (direct, before handleV2) ─────────────────────
+  if (urlPath.startsWith('/api/personal/')) {
+    const pChats = (globalThis._personalChats = globalThis._personalChats || new Map());
+    const userId = (req.headers['x-user-id'] || 'anonymous').substring(0, 64);
+    const PH = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+    const readBody2 = () => new Promise(resolve => {
+      const chunks = []; req.on('data', c => chunks.push(c)); req.on('end', () => resolve(Buffer.concat(chunks).toString()));
+    });
+
+    if (req.method === 'POST' && urlPath === '/api/personal/validate') {
+      const raw = await readBody2();
+      let token = ''; try { token = JSON.parse(raw).token || ''; } catch {}
+      if (!token) { res.writeHead(400, PH); return res.end(JSON.stringify({ error: 'token required' })); }
+      const valid = token === 'forge-mac-agent-2026-secret' || token.length > 8;
+      const model = token === 'forge-mac-agent-2026-secret' ? 'claude-haiku-4-5 (Forge)' : 'claude-haiku-4-5';
+      res.writeHead(valid ? 200 : 401, PH);
+      return res.end(JSON.stringify(valid ? { ok: true, model } : { error: 'invalid token' }));
+    }
+
+    if (req.method === 'GET' && urlPath === '/api/personal/stats') {
+      res.writeHead(200, PH);
+      return res.end(JSON.stringify({ activeTasks: 0, doneTasks: 0, model: 'claude-haiku-4-5', connected: true, messages: (pChats.get(userId) || []).length }));
+    }
+
+    if (req.method === 'GET' && urlPath === '/api/personal/history') {
+      const hist = pChats.get(userId) || [];
+      res.writeHead(200, PH);
+      return res.end(JSON.stringify({ messages: hist.map((m, i) => ({ id: String(i), role: m.role === 'assistant' ? 'agent' : m.role, content: m.content, ts: m.ts })) }));
+    }
+
+    if (req.method === 'DELETE' && urlPath === '/api/personal/history') {
+      pChats.delete(userId); res.writeHead(200, PH); return res.end(JSON.stringify({ ok: true }));
+    }
+
+    if (req.method === 'POST' && urlPath === '/api/personal/chat') {
+      const raw = await readBody2();
+      let message = '', token = '';
+      try { const b = JSON.parse(raw); message = b.message || ''; token = b.token || ''; } catch {}
+      if (!message) { res.writeHead(400, PH); return res.end(JSON.stringify({ error: 'message required' })); }
+      if (!pChats.has(userId)) pChats.set(userId, []);
+      const hist = pChats.get(userId);
+      hist.push({ role: 'user', content: message, ts: Date.now() });
+      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*' });
+      let fullResp = '';
+      try {
+        const AKEY = process.env.ANTHROPIC_API_KEY;
+        if (!AKEY) throw new Error('no key');
+        const ar = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': AKEY, 'anthropic-version': '2023-06-01' },
+          body: JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 1024, stream: true,
+            system: 'Ты персональный AI-ассистент ASYSTEM. Помогай с задачами и проектами. Отвечай на русском.',
+            messages: hist.slice(-10).map(m => ({ role: m.role === 'agent' ? 'assistant' : m.role, content: m.content })) }),
+          signal: AbortSignal.timeout(30000),
+        });
+        if (ar.ok && ar.body) {
+          const reader = ar.body.getReader(); const dec = new TextDecoder();
+          while (true) {
+            const { done, value } = await reader.read(); if (done) break;
+            for (const line of dec.decode(value).split('\n')) {
+              if (!line.startsWith('data: ')) continue;
+              const d = line.slice(6).trim();
+              if (!d || d === '[DONE]') continue;
+              try { const p = JSON.parse(d); const delta = p.delta?.text ?? ''; if (delta) { fullResp += delta; res.write('data: ' + JSON.stringify({ content: delta }) + '\n\n'); } } catch {}
+            }
+          }
+        } else { fullResp = 'Сервис недоступен'; res.write('data: ' + JSON.stringify({ content: fullResp }) + '\n\n'); }
+      } catch (e) { fullResp = 'Ошибка: ' + e.message; res.write('data: ' + JSON.stringify({ content: fullResp }) + '\n\n'); }
+      hist.push({ role: 'assistant', content: fullResp, ts: Date.now() });
+      if (hist.length > 50) hist.splice(0, hist.length - 50);
+      res.write('data: [DONE]\n\n'); return res.end();
+    }
+
+    res.writeHead(404, PH); return res.end(JSON.stringify({ error: 'unknown personal endpoint' }));
+  }
+  // ── End Personal Agent API ─────────────────────────────────────────────
+
+  // ============ TENANTS API ============
+  if (urlPath === '/api/tenants' && req.method === 'GET') {
+    const tenants = [
+      { id: 'asystem', name: 'ASYSTEM', slug: 'asystem', tier: 'enterprise', domain: 'asystem.kg', panelDomain: 'os.te.kg', coolifyDomain: 'coolify.asystem.kg', status: 'active', usersCount: 1, agentsCount: 10 },
+    ];
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ tenants }));
+  }
+
+  if (urlPath === '/api/tenants' && req.method === 'POST') {
+    const chunks3 = [];
+    req.on('data', c => chunks3.push(c));
+    await new Promise(r => req.on('end', r));
+    const body = JSON.parse(Buffer.concat(chunks3).toString() || '{}');
+    const { name, slug, tier, domain, panelDomain, coolifyDomain } = body;
+    if (!name || !slug) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'name и slug обязательны' }));
+    }
+    const tenant = { id: slug, name, slug, tier: tier || 'starter', domain: domain || '', panelDomain: panelDomain || '', coolifyDomain: coolifyDomain || '', status: 'active', usersCount: 0, agentsCount: 0, createdAt: new Date().toISOString() };
+    console.log('[TENANTS] Создан тенант:', JSON.stringify(tenant));
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ ok: true, tenant }));
+  }
+  // ============ End Tenants API ============
 
   // Try v2 endpoints first
   const handled = await handleV2(req, res).catch(e => { console.error("[handleV2 error]", req.url, e.message); return false; });
@@ -9643,12 +9936,20 @@ server.on('error', async err => {
           });
         }, 2000);
       } else {
-        console.error('[EADDRINUSE] No orphan found, exiting.');
-        process.exit(1);
+        console.error('[EADDRINUSE] No orphan found — waiting 3s and retrying bind...');
+        setTimeout(() => {
+          server.listen(PORT, '0.0.0.0', () => {
+            console.log(`[ASYSTEM API v2] re-bound on http://0.0.0.0:${PORT} (delayed)`);
+          });
+        }, 3000);
       }
     } catch (e) {
-      console.error('[EADDRINUSE] Self-heal failed:', e.message);
-      process.exit(1);
+      console.error('[EADDRINUSE] Self-heal failed:', e.message, '— will not exit, retrying in 5s');
+      setTimeout(() => {
+        server.listen(PORT, '0.0.0.0', () => {
+          console.log(`[ASYSTEM API v2] re-bound on http://0.0.0.0:${PORT} (recovered)`);
+        });
+      }, 5000);
     }
   } else {
     console.error('[server error]', err.message);

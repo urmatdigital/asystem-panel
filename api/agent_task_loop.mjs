@@ -175,6 +175,25 @@ async function executeTask(task, attempt = 1, prevTestOutput = null, traceMeta =
     // Достать предупреждения о провалах похожих задач
     const failureWarnings = await getFailureWarnings(task);
 
+    // Qdrant semantic context — найти похожие решения из памяти
+    let qdrantContext = '';
+    try {
+      const { execSync: _exec } = await import('node:child_process');
+      const OAIKEY = process.env.OPENAI_API_KEY || 
+        _exec(`grep OPENAI_API_KEY $HOME/.openclaw/workspace/.env | tail -1 | cut -d= -f2`, {encoding:'utf8'}).trim();
+      const query = `${task.title} ${(task.body||'').slice(0,200)}`;
+      const raw = _exec(
+        `OPENAI_API_KEY=${OAIKEY} python3 $HOME/.openclaw/workspace/scripts/memory_search.py --query ${JSON.stringify(query)} --limit 3 --json 2>/dev/null`,
+        { encoding: 'utf8', timeout: 15000 }
+      );
+      const hits = JSON.parse(raw);
+      if (hits.length > 0) {
+        qdrantContext = '\n\n🧠 RELEVANT MEMORY (semantic search):\n' +
+          hits.map(h => `[${h.payload.type}|score:${h.score.toFixed(2)}] ${h.payload.content.slice(0,300)}`).join('\n---\n');
+        console.log(`[TaskLoop] 🧠 Qdrant: ${hits.length} relevant memories injected`);
+      }
+    } catch(_e) { /* silent - Qdrant not critical */ }
+
     // Build prompt — include test failure context on retry (Symphony pattern)
     let prompt;
     if (attempt > 1 && prevTestOutput) {
@@ -183,7 +202,7 @@ async function executeTask(task, attempt = 1, prevTestOutput = null, traceMeta =
     } else if (attempt > 1) {
       prompt = injectSST(`RETRY attempt ${attempt}. Previous attempt failed.\n\nTask: ${task.title}\n\n${task.body || ''}\n\nBe extra careful and explicit.${failureWarnings}`, task);
     } else {
-      prompt = injectSST(`${task.title}\n\n${task.body || ''}${failureWarnings}`, task);
+      prompt = injectSST(`${task.title}\n\n${task.body || ''}${failureWarnings}${qdrantContext}`, task);
     }
 
     // Pass callback_url so worker POSTs result back to /complete
@@ -414,6 +433,17 @@ async function switchNode(task) {
     retryCount.delete(tid);
     testOutputMap.delete(tid);
     await saveMemory(`Task done: "${task.title}". Agent: ${agent}. Attempts: ${attempts}. Result: ${String(result).slice(0, 250)}`);
+    // Записать факт выполнения в Qdrant
+    try {
+      const { execSync: _execQ } = await import('node:child_process');
+      const OAIKEY = process.env.OPENAI_API_KEY ||
+        _execQ(`grep OPENAI_API_KEY $HOME/.openclaw/workspace/.env | tail -1 | cut -d= -f2`, {encoding:'utf8'}).trim();
+      const content = `Task completed [${agent}]: ${task.title}. ${(task.body||'').slice(0,200)}. Result: ${String(result).slice(0,200)}`;
+      _execQ(
+        `OPENAI_API_KEY=${OAIKEY} python3 $HOME/.openclaw/workspace/scripts/memory_write.py --content ${JSON.stringify(content)} --type decision --tags "task-done,${agent}" 2>/dev/null`,
+        { encoding: 'utf8', timeout: 15000 }
+      );
+    } catch(_) {}
     console.log(`[SwitchNode] ✅ SUCCESS: "${task.title}" (attempt ${attempts})`);
     await closeTrace(traceMeta, 'done', result);
     return { outcome: 'done' };
@@ -460,12 +490,12 @@ async function switchNode(task) {
       await patchTaskConvex(tid, 'blocked');
       retryCount.delete(tid);
 
-      console.warn(`[SwitchNode] 📤 ESCALATING to Atlas: "${task.title}"`);
+      console.warn(`[SwitchNode] 📤 ESCALATING → Урмат: "${task.title}"`);
       const testCtx = testOutputMap.get(tid);
       testOutputMap.delete(tid);
       await post('/api/dispatch', {
-        to: 'atlas',
-        title: `🔺 ESCALATION: ${task.title}`,
+        to: 'urmat',
+        title: `🔺 НУЖНА ПОМОЩЬ: ${task.title}`,
         body: `Task failed after ${attempts} attempts by ${agent}.\n\nOriginal task:\n${task.body || task.description || ''}\n\nError: ${e.message}` +
           (testCtx ? `\n\n🧪 Last test output:\n\`\`\`\n${testCtx.slice(0, 1500)}\n\`\`\`` : '') +
           `\n\nPlease review and reassign or unblock.`,
@@ -473,13 +503,13 @@ async function switchNode(task) {
         priority: 'high',
       });
 
-      await saveMemory(`ESCALATED to Atlas: "${task.title}". Failed ${attempts}x by ${agent}. Error: ${e.message}`);
+      await saveMemory(`ESCALATED → Урмат: "${task.title}". Failed ${attempts}x by ${agent}. Error: ${e.message}`);
       await updateState(`Escalated task "${task.title}" to Atlas after ${attempts} failed attempts`, 'task-loop');
 
       // Telegram notify
       await post('/api/dispatch', {
         to: 'forge',
-        title: `📤 Task escalated to Atlas`,
+        title: `📤 Задача эскалирована → Урмат`,
         body: `"${task.title}" → Atlas (failed ${attempts}x)`,
         source: 'task-loop-notify',
       }).catch(() => {});
@@ -508,7 +538,7 @@ async function taskCycle() {
       const status = guardResp.data.data;
       console.error(`[TaskLoop] 🛑 BUDGET EXHAUSTED: $${status.spent}/$${status.budget} — all tasks paused`);
       await post('/api/dispatch', {
-        to: 'atlas',
+        to: 'urmat',
         title: '🛑 Daily budget exhausted',
         body: `Spent: $${status.spent}\nBudget: $${status.budget}\n\nAll task processing paused. Waiting for budget reset or approval.`,
         source: 'cost-guard',

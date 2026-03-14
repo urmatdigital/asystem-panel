@@ -225,13 +225,21 @@ export function getLearningStats() {
     
     const totalTokensSaved = db.patterns.reduce((sum, p) => sum + (p.tokensSaved || 0), 0);
     
+    const recentPatterns = db.patterns.slice(-5).map(p => ({
+      videoTitle: p.videoTitle,
+      videoUrl:   p.videoUrl || `https://youtube.com/watch?v=${p.videoId}`,
+      topic:      p.topic,
+      analyzedAt: p.analyzedAt || p.timestamp,
+    }));
+
     return {
-      videos: db.videos.length,
-      patterns: db.patterns.length,
-      implemented: db.implementations.length,
-      tokensSaved: totalTokensSaved
+      videos:         db.videos.length,
+      patterns:       db.patterns.length,
+      implemented:    (db.implementations || []).length,
+      tokensSaved:    totalTokensSaved,
+      recentPatterns,
     };
   } catch {
-    return { videos: 0, patterns: 0, implemented: 0, tokensSaved: 0 };
+    return { videos: 0, patterns: 0, implemented: 0, tokensSaved: 0, recentPatterns: [] };
   }
 }

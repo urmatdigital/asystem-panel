@@ -1,0 +1,108 @@
+{
+  "videos": [
+    {
+      "id": "TN0lgKFUXOg",
+      "title": "🧱 This Concrete Is ALIVE – Self-Healing Buildings Heal Themselves in 2026 Trials! 🧱",
+      "analyzedAt": "2026-03-14T03:08:31.018Z"
+    },
+    {
+      "id": "HOreBNd9hX0",
+      "title": "The Magic of Self-Healing Infrastructure: Real World Implications of Execution Cloud",
+      "analyzedAt": "2026-03-14T03:08:48.179Z"
+    },
+    {
+      "id": "L9QZ97y9Exg",
+      "title": "Your local LLM is 10x slower than it should be",
+      "analyzedAt": "2026-03-14T03:10:30.399Z"
+    },
+    {
+      "id": "u57EnkQaUTY",
+      "title": "What is Prompt Caching? Optimize LLM Latency with AI Transformers",
+      "analyzedAt": "2026-03-14T03:10:53.217Z"
+    },
+    {
+      "id": "nKSk_TiR8YA",
+      "title": "Most devs don't understand how LLM tokens work",
+      "analyzedAt": "2026-03-14T05:29:59.429Z"
+    },
+    {
+      "id": "OjrGu0L5K7M",
+      "title": "What is an AI Token? | LLM Tokens explained in 2 minutes!",
+      "analyzedAt": "2026-03-14T05:30:23.219Z"
+    }
+  ],
+  "patterns": [
+    {
+      "videoId": "TN0lgKFUXOg",
+      "videoTitle": "🧱 This Concrete Is ALIVE – Self-Healing Buildings Heal Themselves in 2026 Trials! 🧱",
+      "topic": "self healing infrastructure",
+      "analysis": "🧿 oracle 0.8.5 — Prompt drama in; release notes out.\nCalling anthropic/claude-haiku-4-5 — 5.4k tokens, no files.\nBase URL: https://openrouter.ai/api/...\nTip: no files attached — Oracle works best with project context. Add files via --file path/to/code or docs.\n\nAnswer:\n# Actionable Patterns from Video Transcript\n\n**PROBLEM:** Infrastructure fails prematurely due to crack propagation, requiring expensive maintenance in inaccessible locations (bridges, tunnels, deep underwater structures).\n\n**SOLUTION:** Embed dormant Bacillus spores in concrete mix that activate when moisture enters cracks, producing calcium carbonate to seal gaps autonomously. This bio-concrete self-heals cracks up to 0.8mm and increases structural strength by 15-40%, with bacteria remaining viable for 200 years.\n\n**CODE_PATTERN:**\n```\nIF (moisture_detected AND crack_present) THEN\n  activate_bacillus_spores()\n  produce_calcium_carbonate()\n  seal_crack(target_size: 0.8mm)\n  increase_strength(15-40%)\nEND IF\n```\n\n**METRICS:**\n- Crack closure: 80-90% (100% on some beams)\n- Closure timeline: 21 days\n- Strength recovery: 95% of original\n- Maintenance cost reduction: proportional to inaccessibility premium\n- Lifespan extension: 200+ years (spore dormancy period)\n\n**TAGS:** self-healing concrete, bio-concrete, Bacillus bacteria, infrastructure maintenance, autonomous repair, crack remediation, structural longevity, construction innovation, cost reduction, inaccessible infrastructure\n\n5.0s · anthropic/claude-haiku-4-5 · ↑1.4k ↓319 ↻0* Δ1.71k · sid=extract-only-actionable-patterns-from",
+      "timestamp": "2026-03-14T03:08:31.018Z",
+      "tokensSaved": 786,
+      "status": "analyzed"
+    },
+    {
+      "videoId": "HOreBNd9hX0",
+      "videoTitle": "The Magic of Self-Healing Infrastructure: Real World Implications of Execution Cloud",
+      "topic": "self healing infrastructure",
+      "analysis": "🧿 oracle 0.8.5 — One command, several seers; results stay grounded.\nCalling anthropic/claude-haiku-4-5 — 5.41k tokens, no files.\nBase URL: https://openrouter.ai/api/...\nTip: no files attached — Oracle works best with project context. Add files via --file path/to/code or docs.\n\nAnswer:\n# Extracted Actionable Patterns\n\n**PROBLEM:** Test automation fails due to fragile locator strategies that break when UI elements change, causing maintenance overhead and flaky tests.\n\n**SOLUTION:** Implement self-healing locators within Apple Tools Execution Cloud that automatically adapt to UI changes without manual intervention. Use primary and fallback locator strategies combined with intelligent element detection to maintain test stability across application versions.\n\n**CODE_PATTERN:**\n```\nlocator_primary = \"//button[@id='submit']\"\nlocator_fallback = \"//button[contains(text(), 'Submit')]\"\nself_healing_locator = SelfHealingLocator(\n  primary=locator_primary, \n  fallback=locator_fallback\n)\n```\n\n**METRICS:** \n- Reduce test maintenance time by 60-70%\n- Decrease test flakiness from UI changes by 80%+\n- Improve test execution reliability in cloud environment\n\n**TAGS:** test-automation, locator-strategies, self-healing, UI-testing, Apple-Tools, test-maintenance, cloud-execution, flaky-tests\n\n---\n\n*Note: Transcript is heavily duplicated/corrupted. Analysis based on coherent sections discussing test structure (data, interaction, assertions) and self-healing infrastructure concepts.*\n\n5.8s · anthropic/claude-haiku-4-5 · ↑1.38k ↓296 ↻0* Δ1.68k · sid=extract-only-actionable-patterns-from-2",
+      "timestamp": "2026-03-14T03:08:48.179Z",
+      "tokensSaved": 1007,
+      "status": "analyzed"
+    },
+    {
+      "videoId": "L9QZ97y9Exg",
+      "videoTitle": "Your local LLM is 10x slower than it should be",
+      "topic": "LLM cost optimization",
+      "analysis": "Answer:\n# Actionable Patterns\n**PROBLEM:** Ollama/Llama.cpp single-request sequential processing creates bottlenecks when multiple concurrent agents need LLM queries (code assistants, multi-agent systems).\n**SOLUTION:** Deploy llama-server with remote query capability to decouple inference from client applications, enabling parallel requests from multiple agents/processes. Use HTTP/REST API endpoints instead of sequential chat interfaces to handle concurrent load (10-100s of simultaneous requests).\n**CODE_PATTERN:**\n```python\n# Instead of sequential calls\nfor agent in agents:\n    response = ollama.generate(prompt)  # Blocks\n# Use remote llama-server with concurrency\nimport asyncio, httpx\nasync def query_llama(prompt):\n    async with httpx.AsyncClient() as client:\n        return await client.post(\"http://server:8000/api/generate\", \n                                json={\"prompt\": prompt})\nawait asyncio.gather(*[query_llama(p) for p in prompts])\n```\n**METRICS:** 120-124 tokens/sec throughput maintained across concurrent requests; eliminate agent idle time from sequential bottlenecks; scale from single chat session to 10-100+ parallel agent queries.\n**TAGS:** ollama, llama-cpp, concurrent-inference, multi-agent-optimization, remote-inference, code-assistant-scaling, throughput-improvement\n4.9s · anthropic/claude-haiku-4-5 · ↑1.57k ↓323 ↻0* Δ1.89k · sid=extract-only-actionable-patterns-from-3",
+      "timestamp": "2026-03-14T03:10:30.399Z",
+      "tokensSaved": 1093,
+      "status": "implemented"
+    },
+    {
+      "videoId": "u57EnkQaUTY",
+      "videoTitle": "What is Prompt Caching? Optimize LLM Latency with AI Transformers",
+      "topic": "LLM cost optimization",
+      "analysis": "Answer:\n# Actionable Patterns: Prompt Caching\n**PROBLEM:** LLMs reprocess identical input prompts repeatedly, wasting computational resources and increasing latency/costs.\n**SOLUTION:** Implement prompt caching to store processed input tokens from the first request, then reuse cached tokens for subsequent identical prompts instead of reprocessing them through the model. This reduces input processing overhead while still allowing the model to generate fresh outputs based on the cached context.\n**CODE_PATTERN:**\n```\n# Request 1: Cache the prompt\nresponse1 = client.messages.create(\n    model=\"claude-3-5-sonnet\",\n    system=long_system_prompt,  # Gets cached\n    messages=[{\"role\": \"user\", \"content\": user_query}]\n)\n# Request 2: Reuses cached prompt tokens\nresponse2 = client.messages.create(\n    model=\"claude-3-5-sonnet\",\n    system=long_system_prompt,  # Cache hit\n    messages=[{\"role\": \"user\", \"content\": user_query}]\n)\n```\n**METRICS:** \n- 90% reduction in input token processing time on cache hits\n- ~50% cost savings on cached input tokens\n- Latency improvement: 2-10x faster on repeated prompts\n**TAGS:** LLM-optimization, token-caching, cost-reduction, latency-improvement, input-processing, Claude-API\n3.9s · anthropic/claude-haiku-4-5 · ↑1.41k ↓330 ↻0* Δ1.74k · sid=extract-only-actionable-patterns-from-4",
+      "timestamp": "2026-03-14T03:10:53.217Z",
+      "tokensSaved": 1104,
+      "status": "implemented"
+    },
+    {
+      "videoId": "nKSk_TiR8YA",
+      "videoTitle": "Most devs don't understand how LLM tokens work",
+      "topic": "token optimization LLM",
+      "analysis": "Answer:\n# Actionable Patterns Extracted\n**PROBLEM:** Developers using LLMs lack fundamental understanding of tokens, resulting in inability to predict costs and optimize API usage.\n**SOLUTION:** Understand that tokens are the billing unit for LLMs—input and output tokens are charged at different rates. Learn to calculate total API costs by: (input_tokens / 1000 × input_rate) + (output_tokens / 1000 × output_rate). Use SDK tooling (e.g., Anthropic SDK) to inspect token counts in API responses for accurate cost tracking.\n**CODE_PATTERN:**\n```typescript\nconst response = await client.messages.create({ model, messages });\nconst inputTokens = response.usage.input_tokens;\nconst outputTokens = response.usage.output_tokens;\nconst cost = (inputTokens / 1000 * inputRate) + (outputTokens / 1000 * outputRate);\n```\n**METRICS:** Ability to accurately forecast LLM costs before deployment; ~67% reduction in developer knowledge gaps (baseline: only 1/3 of workshop attendees understood tokens).\n**TAGS:** tokens, LLM-fundamentals, cost-optimization, API-billing, TypeScript, Anthropic-SDK, GPT-pricing\n5.0s · anthropic/claude-haiku-4-5 · ↑1.52k ↓292 ↻0* Δ1.81k · sid=extract-only-actionable-patterns-from-5",
+      "timestamp": "2026-03-14T05:29:59.429Z",
+      "tokensSaved": 1156,
+      "status": "implemented"
+    },
+    {
+      "videoId": "OjrGu0L5K7M",
+      "videoTitle": "What is an AI Token? | LLM Tokens explained in 2 minutes!",
+      "topic": "token optimization LLM",
+      "analysis": "Answer:\n# Actionable Patterns Extracted\n**PROBLEM:** Understanding token consumption in GenAI models is critical for cost optimization and usage measurement, yet teams lack clarity on what tokens represent and how they drive expenses.\n**SOLUTION:** Implement token tracking at input/output boundaries to monitor model usage patterns. Establish token budgets per user/project and correlate token counts with actual costs to identify optimization opportunities. Use this data to choose models or prompt strategies that minimize token consumption.\n**CODE_PATTERN:**\n```python\ndef calculate_cost(input_tokens, output_tokens, model_pricing):\n    total_tokens = input_tokens + output_tokens\n    cost = total_tokens * model_pricing['per_token']\n    return cost, total_tokens\n```\n**METRICS:** \n- Reduce token consumption by 20-30% through prompt optimization\n- Achieve cost visibility within ±5% variance\n- Enable model selection ROI comparison\n**TAGS:** token-economy, cost-optimization, generative-AI, usage-measurement, prompt-engineering, vendor-pricing\n4.8s · anthropic/claude-haiku-4-5 · ↑1.32k ↓240 ↻0* Δ1.56k · sid=extract-only-actionable-patterns-from-6",
+      "timestamp": "2026-03-14T05:30:23.219Z",
+      "tokensSaved": 1065,
+      "status": "implemented"
+    }
+  ],
+  "implementations": [
+    {
+      "patternId": "L9QZ97y9Exg",
+      "timestamp": "2026-03-14T03:10:40.665Z"
+    },
+    {
+      "patternId": "u57EnkQaUTY",
+      "timestamp": "2026-03-14T03:11:01.838Z"
+    },
+    {
+      "patternId": "nKSk_TiR8YA",
+      "timestamp": "2026-03-14T05:30:09.401Z"
+    },
+    {
+      "patternId": "OjrGu0L5K7M",
+      "timestamp": "2026-03-14T05:30:34.210Z"
+    }
+  ]
+}
