@@ -1,0 +1,13 @@
+{
+  "tenant": "bester",
+  "tenantName": "Рэд Петролеум Кыргызстан",
+  "domain": "bester.kg",
+  "color": "#DC2626",
+  "keycloak": {
+    "url": "https://sso.te.kg",
+    "realm": "bester",
+    "clientId": "os-bester-panel"
+  },
+  "modules": ["dashboard","agents","tasks","intelligence"],
+  "hideModules": ["INFRASTRUCTURE", "PLATFORM"]
+}
