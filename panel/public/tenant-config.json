@@ -1,0 +1,13 @@
+{
+  "tenant": "twinbridge",
+  "tenantName": "Twinbridge KG",
+  "domain": "twinbridge.kg",
+  "color": "#0EA5E9",
+  "keycloak": {
+    "url": "https://sso.te.kg",
+    "realm": "twinbridge",
+    "clientId": "os-twinbridge-panel"
+  },
+  "modules": ["dashboard","agents","tasks","intelligence"],
+  "hideModules": ["INFRASTRUCTURE", "PLATFORM"]
+}
