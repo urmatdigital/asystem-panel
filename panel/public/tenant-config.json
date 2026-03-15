@@ -1,0 +1,13 @@
+{
+  "tenant": "asystem",
+  "tenantName": "ASYSTEM",
+  "domain": "asystem.kg",
+  "color": "#3B82F6",
+  "keycloak": {
+    "url": "https://sso.te.kg",
+    "realm": "asystem",
+    "clientId": "os-asystem-panel"
+  },
+  "modules": ["dashboard","agents","tasks","intelligence","infrastructure","platform"],
+  "hideModules": []
+}
