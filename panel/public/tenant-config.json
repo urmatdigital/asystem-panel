@@ -1,0 +1,13 @@
+{
+  "tenant": "aurva",
+  "tenantName": "AURVA KG",
+  "domain": "aurva.kg",
+  "color": "#F59E0B",
+  "keycloak": {
+    "url": "https://sso.te.kg",
+    "realm": "aurwa",
+    "clientId": "os-aurwa-panel"
+  },
+  "modules": ["dashboard","agents","tasks","intelligence"],
+  "hideModules": ["INFRASTRUCTURE", "PLATFORM"]
+}
